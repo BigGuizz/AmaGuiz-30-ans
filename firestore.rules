@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Ouvert à toute personne qui ouvre le site (connexion anonyme automatique),
+    // limité aux collections de l'outil, et coupé automatiquement après le week-end.
+    match /{col}/{id} {
+      allow read, write: if request.auth != null
+        && col in ["guests", "expenses", "todos", "ideas", "settings"]
+        && request.time < timestamp.date(2027, 3, 1);
+    }
+  }
+}

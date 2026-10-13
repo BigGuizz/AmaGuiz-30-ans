@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Les 30 ans au Mas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{color-scheme:light}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+/* Layout: carnet d'organisation — en-tête avec jauges, onglets, puis un plan de travail par onglet. Vert pin du Languedoc + jaune pastis. */
+:root{
+  --bg:#F2F4EE; --surface:#FFFFFF; --sunk:#E8ECE3; --ink:#1D2A21; --muted:#5D6A60; --line:#D6DDD1;
+  --accent:#2F5D46; --accent-ink:#FFFFFF; --sun:#E6B422; --sun-soft:#F8EBC2; --sea:#2C6B89;
+  --ok:#2F7A4B; --ok-soft:#DDEFE2; --warn:#A86A12; --warn-soft:#F6E6C8; --bad:#B0412C; --bad-soft:#F5DDD6;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"Instrument Sans", "Helvetica Neue", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815; --surface:#1A221D; --sunk:#222B25; --ink:#E5EBE4; --muted:#9BA79E; --line:#2E3A32;
+  --accent:#86BE9B; --accent-ink:#10251A; --sun:#F0C64B; --sun-soft:#3A3218; --sea:#72B2D0;
+  --ok:#7CC493; --ok-soft:#1E3326; --warn:#E3AE55; --warn-soft:#3A2D16; --bad:#E58670; --bad-soft:#3D2019;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815; --surface:#1A221D; --sunk:#222B25; --ink:#E5EBE4; --muted:#9BA79E; --line:#2E3A32;
+  --accent:#86BE9B; --accent-ink:#10251A; --sun:#F0C64B; --sun-soft:#3A3218; --sea:#72B2D0;
+  --ok:#7CC493; --ok-soft:#1E3326; --warn:#E3AE55; --warn-soft:#3A2D16; --bad:#E58670; --bad-soft:#3D2019;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 18px 64px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+header.top{display:grid;gap:18px;margin-bottom:22px}
+header.top h1{font-size:clamp(34px,6vw,54px);font-weight:800;line-height:1}
+header.top h1 span{background:linear-gradient(transparent 62%,var(--sun-soft) 62%);padding:0 .08em}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:4px}
+.stat b{font-family:var(--f-display);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat small{color:var(--muted);font-size:12.5px}
+.meter{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.meter.over i{background:var(--bad)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:22px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding-top:6px}
+nav.tabs button{font:600 14.5px var(--f-body);color:var(--muted);background:none;border:0;padding:10px 14px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--sun)}
+nav.tabs button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
+.panel{display:grid;gap:18px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bar .grow{flex:1 1 220px;min-width:0}
+input[type=text],input[type=number],input[type=time],select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 9px;min-width:0}
+textarea{resize:vertical;width:100%}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
+.btn{font:600 14px var(--f-body);border-radius:8px;padding:8px 14px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.small{padding:4px 9px;font-size:13px}
+.x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;padding:4px 6px;border-radius:6px}
+.x:hover{color:var(--bad);background:var(--bad-soft)}
+.x.armed{color:var(--bad);background:var(--bad-soft);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 13px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)} .p-warn{background:var(--warn-soft);color:var(--warn)} .p-bad{background:var(--bad-soft);color:var(--bad)} .p-mute{background:var(--sunk);color:var(--muted)} .p-sun{background:var(--sun-soft);color:var(--ink)}
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:1020px}
+th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:600;padding:10px 8px;border-bottom:1px solid var(--line);background:var(--sunk);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr.declined td{opacity:.5}
+td input[type=text]{width:100%}
+td.c{text-align:center}
+td .name{font-weight:600}
+.nm{display:flex;align-items:center;gap:8px}
+.av{width:30px;height:30px;border-radius:50%;flex:none;object-fit:cover;background:var(--sunk);display:inline-grid;place-items:center;font:600 12px var(--f-body);color:var(--muted)}
+.av.s{width:20px;height:20px;font-size:10px}
+.status-sel{border-radius:999px;font-weight:600;font-size:13px;padding:4px 8px}
+.st-confirme{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.st-peutetre{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.st-decline{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.st-invite{background:var(--sunk);color:var(--muted);border-color:transparent}
+.empty{padding:28px 18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px;min-width:0;align-content:start}
+.card h3{font-size:19px;font-weight:700}
+.card .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.room{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px}
+.room .rh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.room .rh b{font-weight:600}
+.room .beds{font-size:12.5px;color:var(--muted)}
+.occ{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.occ .who{display:inline-flex;align-items:center;gap:2px;background:var(--sun-soft);border-radius:999px;padding:2px 4px 2px 10px;font-size:13px;font-weight:500}
+.occ .who button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:2px 5px;border-radius:999px}
+.occ select{font-size:13px;padding:3px 6px;border-style:dashed;color:var(--muted)}
+.nights{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px}
+.info{background:var(--sunk);border-radius:var(--r);padding:14px 16px;display:grid;gap:6px;font-size:14px}
+.info ul{margin:0;padding-left:18px;display:grid;gap:2px}
+.money{display:grid;gap:0}
+.money .row{display:grid;grid-template-columns:1fr 120px 36px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.money .row input[type=number]{text-align:right;width:100%}
+.money .total{display:flex;justify-content:space-between;padding:10px 0 0;font-weight:700}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:baseline}
+.kv .v{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.big{font-family:var(--f-display);font-size:32px;font-weight:800;font-variant-numeric:tabular-nums}
+.pos{color:var(--ok)} .neg{color:var(--bad)}
+.priceset{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.priceset label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.todo{display:grid;grid-template-columns:22px 1fr auto auto;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)}
+.todo:last-child{border-bottom:0}
+.todo.done .t{text-decoration:line-through;color:var(--muted)}
+.todo .who{font-size:12.5px;color:var(--muted)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.idea{border-left:4px solid var(--sun)}
+.idea p{margin:0;white-space:pre-wrap}
+.idea .meta{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.form{display:grid;gap:8px}
+.note{font-size:13px;color:var(--muted)}
+#banner{background:var(--warn-soft);color:var(--warn);border-radius:var(--r);padding:10px 14px;font-weight:500}
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;z-index:20;max-width:calc(100% - 32px)}
+@media (max-width:560px){.money .row{grid-template-columns:1fr 92px 30px}.todo{grid-template-columns:22px 1fr auto}.todo .who{grid-column:2}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+#login{max-width:380px;margin:12vh auto 0;padding:0 18px;display:grid;gap:14px}
+#login h1{font-family:var(--f-display);font-size:40px;font-weight:800;line-height:1}
+#login form{display:grid;gap:10px}
+#login .err{color:var(--bad);font-size:14px;min-height:1.2em}
+.foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.foot label.btn{display:inline-block}
+</style>
+</head>
+<body>
+
+
+
+<div class="wrap" id="app" hidden>
+  <header class="top">
+    <div class="eyebrow">Mas des 7 Fonts · Saint-Pons-de-Mauchiens</div>
+    <h1>Les 30 ans <span>au Mas</span></h1>
+    <div class="stats" id="stats"></div>
+  </header>
+  <div id="banner" hidden></div>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-tab="invites">Invités</button>
+    <button role="tab" data-tab="couchages">Couchages</button>
+    <button role="tab" data-tab="budget">Budget</button>
+    <button role="tab" data-tab="todo">To-do</button>
+    <button role="tab" data-tab="olympiades">Olympiades</button>
+  </nav>
+
+  <section class="panel" id="p-invites" data-panel="invites">
+    <div class="bar">
+      <input type="text" id="newGuest" class="grow" placeholder="Prénom de l'invité (ex. Léa, le copain de Laurie…)">
+      <button class="btn" id="addGuest">Ajouter</button>
+    </div>
+    <div class="chips" id="filters"></div>
+    <div id="guestList"></div>
+    <p class="note">Le tarif se calcule tout seul à partir du séjour : 2 nuits, 1 nuit ou soirée seulement. Les montants se règlent dans l'onglet Budget. « Offert » met la participation à 0 € (DJ, organisateurs…).</p>
+  </section>
+
+  <section class="panel" id="p-couchages" data-panel="couchages" hidden>
+    <div class="grid2" id="nightMeters"></div>
+    <div class="card" id="unplaced"></div>
+    <div class="grid2" id="gites"></div>
+    <div class="info">
+      <div class="eyebrow">Ce qu'on sait du mas</div>
+      <ul>
+        <li>4 gîtes + 1 suite climatisés, 36 couchages, 6 salles d'eau, 7 WC.</li>
+        <li>Salle de réception climatisée avec piste de danse, pas de limite d'horaire pour le bruit.</li>
+        <li>Office-cuisine pro (vaisselle pour 50, armoire froide, tireuse à bière), barbecue géant.</li>
+        <li>Piscine 17 × 7 m, terrain de pétanque géant, parc clos d'1 hectare, grand parking.</li>
+        <li><b>Draps non fournis</b> · ménage de fin de séjour et taxe de séjour inclus · animaux admis.</li>
+        <li>Contact : Sébastien, <span class="mono">06 26 70 19 34</span> · Chemin de la Victoire, 34230.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="panel" id="p-budget" data-panel="budget" hidden>
+    <div class="grid2">
+      <div class="card">
+        <div class="head"><h3>Dépenses</h3><span class="note">modifiables</span></div>
+        <div class="money" id="expenses"></div>
+        <div class="bar"><input type="text" id="newExpLabel" class="grow" placeholder="Nouvelle dépense"><input type="number" id="newExpAmount" placeholder="€" style="width:100px"><button class="btn small" id="addExp">Ajouter</button></div>
+      </div>
+      <div class="card" id="balance"></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Tarifs annoncés</h3>
+        <div class="priceset">
+          <label for="pr2">2 nuits (ven + sam)<input type="number" id="pr2" data-k="deuxNuits"></label>
+          <label for="pr1">1 nuit<input type="number" id="pr1" data-k="uneNuit"></label>
+          <label for="pr0">Soirée seulement<input type="number" id="pr0" data-k="soiree"></label>
+        </div>
+        <p class="note">Le tarif soirée n'est pas encore décidé : il est à 0 € tant que vous ne le fixez pas.</p>
+      </div>
+      <div class="card" id="perGuest"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-todo" data-panel="todo" hidden>
+    <div class="bar">
+      <input type="text" id="newTodo" class="grow" placeholder="Une chose à faire…">
+      <input type="text" id="newTodoWho" placeholder="Qui ?" style="width:130px">
+      <button class="btn" id="addTodo">Ajouter</button>
+    </div>
+    <div class="list" id="todos"></div>
+  </section>
+
+  <section class="panel" id="p-olympiades" data-panel="olympiades" hidden>
+    <div class="card form">
+      <h3>Proposer une épreuve</h3>
+      <input type="text" id="ideaTitle" placeholder="Nom de l'épreuve (ex. relais bouée dans la piscine)">
+      <textarea id="ideaDesc" rows="3" placeholder="Règles, matériel, nombre d'équipes…"></textarea>
+      <div class="bar"><input type="text" id="ideaAuthor" placeholder="Proposé par" class="grow"><button class="btn" id="addIdea">Ajouter l'idée</button></div>
+    </div>
+    <div class="grid2" id="ideas"></div>
+  </section>
+  <div class="foot">
+    <span id="who"></span>
+    <span class="bar">
+      <label class="btn ghost small" for="importFile">Importer des données (.json)</label>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </span>
+  </div>
+</div>
+<div id="toast" hidden></div>
+
+<script type="module">
+const GITES=[
+ {id:'c1',name:'Gîte Corniche 1',rooms:[
+   {id:'c1-1',name:'Chambre 1',beds:'1 lit double 140',cap:2},
+   {id:'c1-2',name:'Chambre 2',beds:'1 lit double + 1 lit simple',cap:3},
+   {id:'c1-3',name:'Salle à manger',beds:'1 BZ 140',cap:2}]},
+ {id:'c2',name:'Gîte Corniche 2',rooms:[
+   {id:'c2-1',name:'Chambre 1',beds:'1 lit double 140',cap:2},
+   {id:'c2-2',name:'Alcôve',beds:'lits superposés',cap:2},
+   {id:'c2-3',name:'Salon TV',beds:'3 lits simples',cap:3}]},
+ {id:'th',name:'Gîte Thau',rooms:[
+   {id:'th-1',name:'Chambre 1',beds:'2 lits simples + superposés',cap:4},
+   {id:'th-2',name:'Chambre 2',beds:'2 lits simples',cap:2},
+   {id:'th-3',name:'Chambre 3',beds:'1 lit double 140',cap:2},
+   {id:'th-4',name:'Salle à manger',beds:'1 BZ 140',cap:2}]},
+ {id:'pp',name:'Gîte Picpoul',rooms:[
+   {id:'pp-1',name:'Chambre 1',beds:'2 lits simples',cap:2},
+   {id:'pp-2',name:'Chambre 2',beds:'1 lit double + superposés',cap:4},
+   {id:'pp-3',name:'Salle à manger',beds:'1 BZ 140',cap:2}]},
+ {id:'su',name:'La Suite',rooms:[
+   {id:'su-1',name:'Chambre',beds:'1 lit double',cap:2},
+   {id:'su-2',name:'Salon',beds:'1 clic-clac 140',cap:2}]}
+];
+const ROOMS={};GITES.forEach(g=>g.rooms.forEach(r=>ROOMS[r.id]={...r,gite:g.name}));
+const CAPACITY=36;
+const STAYS={
+ '':{label:'À préciser',nights:[]},
+ 'ven-sam':{label:'Ven + sam · 2 nuits',nights:['ven','sam'],k:'deuxNuits'},
+ 'ven':{label:'Vendredi · 1 nuit',nights:['ven'],k:'uneNuit'},
+ 'sam':{label:'Samedi · 1 nuit',nights:['sam'],k:'uneNuit'},
+ 'soiree':{label:'Soirée seulement',nights:[],k:'soiree'}};
+const STATUS={invite:'Invité',confirme:'Confirmé',peutetre:'Peut-être',decline:'Ne vient pas'};
+const DAYS={'':'—',ven:'Vendredi',sam:'Samedi',dim:'Dimanche'};
+
+let db=null, guests=[], expenses=[], todos=[], ideas=[], prices={deuxNuits:80,uneNuit:50,soiree:0}, pricesSeen=false;
+let filter='tous', dirty=false;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur=n=>(Math.round(n)).toLocaleString('fr-FR')+' €';
+const opt=(obj,cur)=>Object.entries(obj).map(([k,v])=>`<option value="${k}"${k===(cur||'')?' selected':''}>${esc(typeof v==='string'?v:v.label)}</option>`).join('');
+
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600)}
+async function save(p){try{await p}catch(e){toast(e&&e.code==='invalid_argument'?"Tu n'as pas les droits pour modifier cette page.":(e&&e.code==='quota_exceeded'?'La base est pleine : supprime des éléments.':"Pas enregistré, réessaie."))}}
+
+const av=(g,cls='')=>typeof g.photo==='string'&&g.photo.startsWith('data:image/')?`<img class="av ${cls}" src="${esc(g.photo)}" alt="">`:`<span class="av ${cls}" aria-hidden="true">${esc(String(g.name||'?').trim().charAt(0).toUpperCase())}</span>`;
+const comes=g=>g.status!=='decline';
+const nightsOf=g=>comes(g)?(STAYS[g.stay||'']||STAYS['']).nights:[];
+const priceOf=g=>{const s=STAYS[g.stay||''];if(!s||!s.k||g.offert)return 0;return Number(prices[s.k])||0};
+const counted=g=>comes(g)&&g.stay;
+const sorted=()=>[...guests].sort((a,b)=>(a.order??1e12)-(b.order??1e12)||String(a.name).localeCompare(b.name,'fr'));
+
+/* ---------- tabs ---------- */
+function showTab(name){
+  document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name));
+  try{localStorage.setItem('tab',name)}catch(e){}
+}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showTab(b.dataset.tab)});
+{let t=(location.hash||'').slice(1);if(!document.querySelector(`[data-panel="${t}"]`)){try{t=localStorage.getItem('tab')}catch(e){t=null}}showTab(document.querySelector(`[data-panel="${t}"]`)?t:'invites')}
+
+/* ---------- render ---------- */
+function render(){
+  const a=document.activeElement;
+  if(a&&a.matches('input[type=text],input[type=number],input[type=time],textarea')&&a.closest('[data-live]')){dirty=true;return}
+  dirty=false;
+  renderStats();renderGuests();renderRooms();renderBudget();renderTodos();renderIdeas();
+}
+document.addEventListener('focusout',()=>setTimeout(()=>{if(dirty)render()},0));
+
+function totals(){
+  const ven=guests.filter(g=>nightsOf(g).includes('ven')).length;
+  const sam=guests.filter(g=>nightsOf(g).includes('sam')).length;
+  const dep=expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const due=guests.filter(counted).reduce((s,g)=>s+priceOf(g),0);
+  const paid=guests.filter(g=>counted(g)&&g.paid).reduce((s,g)=>s+priceOf(g),0);
+  return {ven,sam,dep,due,paid,conf:guests.filter(g=>g.status==='confirme').length,gare:guests.filter(g=>comes(g)&&g.gare).length};
+}
+function meter(n,cap){const p=Math.min(100,n/cap*100);return `<div class="meter${n>cap?' over':''}"><i style="width:${p}%"></i></div>`}
+function renderStats(){
+  const t=totals();
+  $('#stats').innerHTML=`
+   <div class="stat"><span class="eyebrow">Confirmés</span><b>${t.conf}<span style="color:var(--muted);font-size:16px"> / ${guests.length}</span></b><small>sur la liste</small></div>
+   <div class="stat"><span class="eyebrow">Nuit de vendredi</span><b>${t.ven}<span style="color:var(--muted);font-size:16px"> / ${CAPACITY}</span></b>${meter(t.ven,CAPACITY)}</div>
+   <div class="stat"><span class="eyebrow">Nuit de samedi</span><b>${t.sam}<span style="color:var(--muted);font-size:16px"> / ${CAPACITY}</span></b>${meter(t.sam,CAPACITY)}</div>
+   <div class="stat"><span class="eyebrow">Solde prévisionnel</span><b class="${t.due-t.dep>=0?'pos':'neg'}">${t.due-t.dep>=0?'+':''}${eur(t.due-t.dep)}</b><small>participations − dépenses</small></div>`;
+}
+
+function renderGuests(){
+  const fs={tous:'Tous',confirme:'Confirmés',relancer:'À relancer',gare:'Navette gare',apayer:'Pas encore payé'};
+  $('#filters').innerHTML=Object.entries(fs).map(([k,v])=>`<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${v}</button>`).join('');
+  const list=sorted().filter(g=>filter==='tous'||(filter==='confirme'&&g.status==='confirme')||(filter==='relancer'&&(g.status==='invite'||g.status==='peutetre'))||(filter==='gare'&&comes(g)&&g.gare)||(filter==='apayer'&&counted(g)&&!g.paid&&priceOf(g)>0));
+  if(!guests.length){$('#guestList').innerHTML=`<div class="empty">${db?'Aucun invité pour l\'instant. Ajoute le premier nom juste au-dessus.':'Chargement de la liste…'}</div>`;return}
+  if(!list.length){$('#guestList').innerHTML=`<div class="empty">Personne dans ce filtre.</div>`;return}
+  $('#guestList').innerHTML=`<div class="tablebox" data-live><table><thead><tr>
+    <th style="width:210px">Invité</th><th>Statut</th><th>Séjour</th><th>Arrivée</th><th>Heure</th><th class="c">Gare</th><th>Note</th><th style="text-align:right">Tarif</th><th class="c">Offert</th><th class="c">Payé</th><th></th></tr></thead><tbody>
+    ${list.map(g=>`<tr data-id="${g.id}" class="${g.status==='decline'?'declined':''}">
+      <td><div class="nm">${av(g)}<input type="text" data-f="name" id="n-${g.id}" value="${esc(g.name)}" class="name" aria-label="Nom"></div></td>
+      <td><select data-f="status" id="s-${g.id}" class="status-sel st-${g.status||'invite'}" aria-label="Statut">${opt(STATUS,g.status||'invite')}</select></td>
+      <td><select data-f="stay" id="y-${g.id}" aria-label="Séjour">${opt(STAYS,g.stay)}</select></td>
+      <td><select data-f="arrDay" id="d-${g.id}" aria-label="Jour d'arrivée">${opt(DAYS,g.arrDay)}</select></td>
+      <td><input type="time" data-f="arrTime" id="h-${g.id}" value="${esc(g.arrTime)}" aria-label="Heure d'arrivée"></td>
+      <td class="c"><input type="checkbox" data-f="gare" id="g-${g.id}" ${g.gare?'checked':''} aria-label="À chercher à la gare"></td>
+      <td><input type="text" data-f="note" id="o-${g.id}" value="${esc(g.note)}" placeholder="Train, allergie, voiture…" aria-label="Note"></td>
+      <td class="num" style="text-align:right">${g.stay&&comes(g)?eur(priceOf(g)):'<span class="pill p-mute">—</span>'}</td>
+      <td class="c"><input type="checkbox" data-f="offert" id="f-${g.id}" ${g.offert?'checked':''} aria-label="Offert"></td>
+      <td class="c"><input type="checkbox" data-f="paid" id="p-${g.id}" ${g.paid?'checked':''} aria-label="Payé"></td>
+      <td><button class="x" data-del="guests" aria-label="Supprimer">Suppr.</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+$('#filters').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){filter=b.dataset.f;renderGuests()}});
+$('#guestList').addEventListener('change',e=>{
+  const row=e.target.closest('[data-id]'),f=e.target.dataset.f;if(!row||!f||!db)return;
+  const v=e.target.type==='checkbox'?e.target.checked:e.target.value.trim();
+  const patch={[f]:v};
+  if(f==='stay'&&!STAYS[v].nights.length)patch.room='';
+  if(f==='status'&&v==='decline')patch.room='';
+  save(db.doc('guests/'+row.dataset.id).update(patch));
+});
+async function addGuest(){
+  const el=$('#newGuest'),name=el.value.trim();if(!name||!db)return;
+  el.value='';
+  const max=guests.reduce((m,g)=>Math.max(m,g.order||0),0);
+  await save(db.collection('guests').add({name,status:'invite',stay:'',arrDay:'',arrTime:'',gare:false,note:'',offert:false,paid:false,room:'',order:max+1,createdAt:Date.now()}));
+}
+$('#addGuest').onclick=addGuest;$('#newGuest').addEventListener('keydown',e=>{if(e.key==='Enter')addGuest()});
+
+/* two-step delete, shared */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-del]');if(!b||!db)return;
+  if(!b.classList.contains('armed')){b.classList.add('armed');b.dataset.orig=b.textContent;b.textContent='Confirmer';setTimeout(()=>{b.classList.remove('armed');b.textContent=b.dataset.orig},3000);return}
+  const id=b.closest('[data-id]').dataset.id;save(db.doc(b.dataset.del+'/'+id).delete());
+});
+
+/* ---------- rooms ---------- */
+function renderRooms(){
+  const t=totals();
+  $('#nightMeters').innerHTML=['ven','sam'].map(n=>{const c=n==='ven'?t.ven:t.sam;return `<div class="card"><div class="head"><h3>Nuit de ${n==='ven'?'vendredi':'samedi'}</h3><span class="num">${c} / ${CAPACITY}</span></div>${meter(c,CAPACITY)}<span class="note">${c>CAPACITY?`${c-CAPACITY} personne(s) de trop`:`${CAPACITY-c} couchage(s) libre(s)`}</span></div>`}).join('');
+  const sleepers=sorted().filter(g=>nightsOf(g).length);
+  const free=sleepers.filter(g=>!g.room||!ROOMS[g.room]);
+  $('#unplaced').innerHTML=`<div class="head"><h3>Sans lit attribué</h3><span class="pill ${free.length?'p-warn':'p-ok'}">${free.length} personne(s)</span></div>
+    ${free.length?`<div class="occ">${free.map(g=>`<span class="who" style="padding:2px 10px 2px 3px">${av(g,'s')} ${esc(g.name)} <span class="note">· ${nightsOf(g).map(n=>n==='ven'?'ven':'sam').join('+')}</span></span>`).join('')}</div>`:`<span class="note">${sleepers.length?'Tout le monde a un lit.':'Personne ne dort sur place pour l\'instant : indique le séjour de chacun dans l\'onglet Invités.'}</span>`}`;
+  const options=`<option value="">+ Placer…</option>`+free.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('');
+  $('#gites').innerHTML=GITES.map(gi=>{
+    const cap=gi.rooms.reduce((s,r)=>s+r.cap,0);
+    const occ=sleepers.filter(g=>g.room&&g.room.startsWith(gi.id+'-')).length;
+    return `<div class="card"><div class="head"><h3>${gi.name}</h3><span class="num note">${occ} / ${cap}</span></div>
+     ${gi.rooms.map(r=>{
+       const people=sleepers.filter(g=>g.room===r.id);
+       const v=people.filter(g=>nightsOf(g).includes('ven')).length,s=people.filter(g=>nightsOf(g).includes('sam')).length;
+       const over=v>r.cap||s>r.cap;
+       return `<div class="room"><div class="rh"><b>${r.name}</b><span class="nights"><span class="pill ${v>r.cap?'p-bad':'p-mute'}">ven ${v}/${r.cap}</span><span class="pill ${s>r.cap?'p-bad':'p-mute'}">sam ${s}/${r.cap}</span></span></div>
+        <span class="beds">${r.beds}${over?' · <b style="color:var(--bad)">trop de monde</b>':''}</span>
+        <div class="occ">${people.map(g=>`<span class="who" style="padding-left:3px">${av(g,'s')} ${esc(g.name)}<button data-unplace="${g.id}" aria-label="Retirer ${esc(g.name)}">×</button></span>`).join('')}
+        ${free.length?`<select data-place="${r.id}" id="pl-${r.id}" aria-label="Placer quelqu'un dans ${gi.name}, ${r.name}">${options}</select>`:''}</div></div>`}).join('')}
+    </div>`}).join('');
+}
+$('#gites').addEventListener('change',e=>{const r=e.target.dataset.place;if(r&&e.target.value&&db)save(db.doc('guests/'+e.target.value).update({room:r}))});
+$('#gites').addEventListener('click',e=>{const id=e.target.dataset.unplace;if(id&&db)save(db.doc('guests/'+id).update({room:''}))});
+
+/* ---------- budget ---------- */
+function renderBudget(){
+  const t=totals();
+  $('#expenses').setAttribute('data-live','');
+  $('#expenses').innerHTML=(expenses.length?[...expenses].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).map(e=>`<div class="row" data-id="${e.id}">
+     <input type="text" data-f="label" id="el-${e.id}" value="${esc(e.label)}" aria-label="Libellé">
+     <input type="number" data-f="amount" id="ea-${e.id}" value="${Number(e.amount)||0}" aria-label="Montant en euros">
+     <button class="x" data-del="expenses" aria-label="Supprimer">×</button></div>`).join(''):`<div class="empty">Aucune dépense saisie.</div>`)
+     +`<div class="total"><span>Total</span><span class="num">${eur(t.dep)}</span></div>`;
+  const people=guests.filter(counted);
+  const nNights=people.reduce((s,g)=>s+nightsOf(g).length,0);
+  const solde=t.due-t.dep;
+  $('#balance').innerHTML=`<h3>Équilibre</h3>
+    <div><div class="eyebrow">Solde si tout le monde paie</div><div class="big ${solde>=0?'pos':'neg'}">${solde>=0?'+':''}${eur(solde)}</div></div>
+    <div class="kv">
+      <span>Participations attendues</span><span class="v">${eur(t.due)}</span>
+      <span>Déjà encaissé</span><span class="v">${eur(t.paid)}</span>
+      <span>Reste à encaisser</span><span class="v">${eur(t.due-t.paid)}</span>
+      <span>Dépenses</span><span class="v">${eur(t.dep)}</span>
+    </div>
+    <div class="kv" style="border-top:1px solid var(--line);padding-top:10px">
+      <span>Personnes au séjour connu</span><span class="v">${people.length}</span>
+      <span>Coût réel par personne</span><span class="v">${people.length?eur(t.dep/people.length):'—'}</span>
+      <span>Coût du mas par nuit dormie</span><span class="v">${nNights?eur((expenses.find(e=>/mas/i.test(e.label))?.amount||0)/nNights):'—'}</span>
+    </div>
+    ${t.due>0&&solde<0?`<p class="note">Pour tomber juste avec ces invités, il faudrait monter les tarifs d'environ ${Math.round((t.dep/t.due-1)*100)} % : ${eur(prices.deuxNuits*t.dep/t.due)} les 2 nuits, ${eur(prices.uneNuit*t.dep/t.due)} la nuit.</p>`:''}
+    ${!people.length?`<p class="note">Le budget se remplit à mesure que tu renseignes le séjour de chaque invité.</p>`:''}`;
+  ['pr2','pr1','pr0'].forEach(id=>{const el=$('#'+id);if(document.activeElement!==el)el.value=prices[el.dataset.k]??0});
+  const by=k=>people.filter(g=>g.stay===k);
+  const rows=[['ven-sam','2 nuits'],['ven','Vendredi seul'],['sam','Samedi seul'],['soiree','Soirée']].map(([k,l])=>{const gs=by(k),off=gs.filter(g=>g.offert).length;return `<span>${l} <span class="note">· ${gs.length} pers.${off?` dont ${off} offert`:''}</span></span><span class="v">${eur(gs.reduce((s,g)=>s+priceOf(g),0))}</span>`}).join('');
+  $('#perGuest').innerHTML=`<h3>Répartition des participations</h3><div class="kv">${rows}</div>
+   <span class="note">${guests.filter(g=>comes(g)&&!g.stay).length} invité(s) sans séjour renseigné ne sont pas comptés.</span>`;
+}
+$('#expenses').addEventListener('change',e=>{const row=e.target.closest('[data-id]'),f=e.target.dataset.f;if(!row||!f||!db)return;save(db.doc('expenses/'+row.dataset.id).update({[f]:f==='amount'?Number(e.target.value)||0:e.target.value.trim()}))});
+$('#addExp').onclick=()=>{const l=$('#newExpLabel').value.trim(),a=Number($('#newExpAmount').value)||0;if(!l||!db)return;$('#newExpLabel').value='';$('#newExpAmount').value='';save(db.collection('expenses').add({label:l,amount:a,createdAt:Date.now()}))};
+document.querySelectorAll('.priceset input').forEach(el=>el.addEventListener('change',()=>{if(!db)return;const p={...prices,[el.dataset.k]:Number(el.value)||0};save(db.doc('settings/prix').set(p))}));
+
+/* ---------- todos ---------- */
+function renderTodos(){
+  const box=$('#todos');box.setAttribute('data-live','');
+  if(!todos.length){box.innerHTML=`<div class="empty" style="border:0">Rien à faire pour l'instant. Ajoute une tâche au-dessus.</div>`;return}
+  const list=[...todos].sort((a,b)=>(a.done-b.done)||((a.createdAt||0)-(b.createdAt||0)));
+  box.innerHTML=list.map(t=>`<div class="todo${t.done?' done':''}" data-id="${t.id}">
+    <input type="checkbox" data-f="done" id="td-${t.id}" ${t.done?'checked':''} aria-label="Fait">
+    <span class="t">${esc(t.text)}</span><span class="who">${esc(t.who||'')}</span>
+    <button class="x" data-del="todos" aria-label="Supprimer">×</button></div>`).join('');
+}
+$('#todos').addEventListener('change',e=>{const row=e.target.closest('[data-id]');if(row&&db)save(db.doc('todos/'+row.dataset.id).update({done:e.target.checked}))});
+function addTodo(){const t=$('#newTodo').value.trim();if(!t||!db)return;const who=$('#newTodoWho').value.trim();$('#newTodo').value='';save(db.collection('todos').add({text:t,who,done:false,createdAt:Date.now()}))}
+$('#addTodo').onclick=addTodo;$('#newTodo').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo()});
+
+/* ---------- ideas ---------- */
+function renderIdeas(){
+  const box=$('#ideas');
+  if(!ideas.length){box.innerHTML=`<div class="empty">Pas encore d'épreuve. Bouée relais, pétanque à l'aveugle, quiz sur les 30 ans… note la première idée au-dessus.</div>`;return}
+  box.innerHTML=[...ideas].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(i=>`<div class="card idea" data-id="${i.id}"><h3>${esc(i.title)}</h3>${i.desc?`<p>${esc(i.desc)}</p>`:''}<div class="meta"><span>${i.author?'Proposé par '+esc(i.author):''}</span><button class="x" data-del="ideas" aria-label="Supprimer">Suppr.</button></div></div>`).join('');
+}
+$('#addIdea').onclick=()=>{const title=$('#ideaTitle').value.trim();if(!title||!db)return;const desc=$('#ideaDesc').value.trim(),author=$('#ideaAuthor').value.trim();$('#ideaTitle').value='';$('#ideaDesc').value='';save(db.collection('ideas').add({title,desc,author,createdAt:Date.now()}))};
+
+/* ---------- data (Firebase) ---------- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, addDoc, deleteDoc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { FIREBASE_CONFIG } from "./config.js";
+
+const fbApp=initializeApp(FIREBASE_CONFIG);
+const fs=getFirestore(fbApp);
+const auth=getAuth(fbApp);
+const wrapDocs=s=>({docs:s.docs.map(d=>({id:d.id,data:()=>d.data()}))});
+const adapter={
+  collection:p=>({
+    add:d=>addDoc(collection(fs,p),d),
+    onSnapshot:(n,e)=>onSnapshot(collection(fs,p),s=>n(wrapDocs(s)),e)}),
+  doc:p=>({
+    update:d=>updateDoc(doc(fs,p),d),
+    set:d=>setDoc(doc(fs,p),d),
+    delete:()=>deleteDoc(doc(fs,p)),
+    onSnapshot:(n,e)=>onSnapshot(doc(fs,p),s=>n({exists:s.exists(),data:()=>s.data()}),e)})
+};
+let unsubs=[];
+function startData(){
+  db=adapter;
+  const sub=(col,set)=>unsubs.push(db.collection(col).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));render()},()=>toast('Connexion aux données perdue, recharge la page.')));
+  sub('guests',v=>guests=v);sub('expenses',v=>expenses=v);sub('todos',v=>todos=v);sub('ideas',v=>ideas=v);
+  unsubs.push(db.doc('settings/prix').onSnapshot(s=>{if(s.exists)prices={deuxNuits:80,uneNuit:50,soiree:0,...s.data()};render()}));
+}
+function stopData(){unsubs.forEach(u=>{try{u()}catch(e){}});unsubs=[];db=null;guests=[];expenses=[];todos=[];ideas=[]}
+
+onAuthStateChanged(auth,u=>{
+  $('#app').hidden=!u;
+  if(u){startData();render()}else{stopData();signInAnonymously(auth).catch(()=>{const b=$('#banner');$('#app').hidden=false;b.textContent="Connexion à la base impossible. Vérifie ta connexion internet puis recharge la page.";b.hidden=false})}
+});
+
+/* Import a JSON export: {guests:{id:{...}}, todos:{...}, expenses:{...}, ideas:{...}, settings:{...}} */
+$('#importFile').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f||!db)return;
+  try{
+    const data=JSON.parse(await f.text());
+    const writes=[];
+    for(const col of ['guests','todos','expenses','ideas','settings'])
+      for(const [id,body] of Object.entries(data[col]||{})) if(body&&typeof body==='object') writes.push([col,id,body]);
+    for(let i=0;i<writes.length;i+=400){
+      const b=writeBatch(fs);
+      writes.slice(i,i+400).forEach(([c,id,body])=>b.set(doc(fs,c,id),body));
+      await b.commit();
+    }
+    toast(writes.length+' éléments importés.');
+  }catch(err){toast("Import impossible : le fichier n'est pas un export valide.")}
+});
+render();
+</script>
+</body>
+</html>
