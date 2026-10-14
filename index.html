@@ -129,6 +129,14 @@ td .name{font-weight:600}
 .list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .idea{border-left:4px solid var(--sun)}
 .idea p{margin:0;white-space:pre-wrap}
+.idea .head h3 .n{color:var(--muted);font-family:var(--f-mono);font-size:15px;margin-right:6px}
+.idea .mat{background:var(--sunk);border-radius:8px;padding:8px 10px;font-size:13.5px;white-space:pre-wrap}
+.idea.unsure{border-left-color:var(--line)}
+.idea .acts{display:flex;gap:4px}
+.olymp-intro{border-top:4px solid var(--sun)}
+.olymp-intro p{margin:0}
+.prize{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--sun-soft);border-radius:8px;padding:10px 12px}
+.prize input{flex:1 1 200px}
 .idea .meta{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
 .form{display:grid;gap:8px}
 .note{font-size:13px;color:var(--muted)}
@@ -225,13 +233,20 @@ td .name{font-weight:600}
   </section>
 
   <section class="panel" id="p-olympiades" data-panel="olympiades" hidden>
+    <div class="card olymp-intro">
+      <h3>Les Olympiades du Mas</h3>
+      <p>Des défis en équipes pour faire connaissance et cumuler des points, dans une ambiance conviviale.</p>
+      <p><b>Une équipe par gîte.</b> Ceux qui dorment ensemble jouent ensemble : on fait connaissance pendant les épreuves, et le soir on se retrouve sous le même toit. Les gîtes n'ont pas tous la même taille (de 4 à 10 couchages), donc on pourra rapprocher la Suite d'un gîte ou rééquilibrer à la marge, voire tirer les équipes au sort.</p>
+      <p><b>Les points.</b> Chaque épreuve rapporte des points à l'équipe. Barème proposé : 5 points pour la 1<sup>re</sup> place, 3 pour la 2<sup>e</sup>, 2 pour la 3<sup>e</sup>, 1 pour les autres.</p>
+      <div class="prize" data-live><span><b>À la fin, un cadeau à gagner</b> pour l'équipe qui a le plus de points :</span><input type="text" id="prize" placeholder="Surprise, encore à définir…" aria-label="Cadeau à gagner"></div>
+    </div>
+    <div class="grid2" id="ideas" data-live></div>
     <div class="card form">
       <h3>Proposer une épreuve</h3>
       <input type="text" id="ideaTitle" placeholder="Nom de l'épreuve (ex. relais bouée dans la piscine)">
       <textarea id="ideaDesc" rows="3" placeholder="Règles, matériel, nombre d'équipes…"></textarea>
       <div class="bar"><input type="text" id="ideaAuthor" placeholder="Proposé par" class="grow"><button class="btn" id="addIdea">Ajouter l'idée</button></div>
     </div>
-    <div class="grid2" id="ideas"></div>
   </section>
   <div class="foot">
     <span id="who"></span>
@@ -279,7 +294,7 @@ const DAYS={'':'—',ven:'Vendredi',sam:'Samedi',dim:'Dimanche'};
 const ORGAS={guilhem:'Guilhem',amandine:'Amandine'};
 
 let db=null, guests=[], expenses=[], todos=[], ideas=[], prices={deuxNuits:80,uneNuit:50,soiree:0}, pricesSeen=false;
-let filter='tous', dirty=false;
+let filter='tous', dirty=false, olymp={}, editingIdea=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eur=n=>(Math.round(n)).toLocaleString('fr-FR')+' €';
@@ -511,12 +526,40 @@ function addTodo(){const t=$('#newTodo').value.trim();if(!t||!db)return;const wh
 $('#addTodo').onclick=addTodo;$('#newTodo').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo()});
 
 /* ---------- ideas ---------- */
+const sortedIdeas=()=>[...ideas].sort((a,b)=>(a.order??1e12)-(b.order??1e12)||(a.createdAt||0)-(b.createdAt||0));
 function renderIdeas(){
-  const box=$('#ideas');
-  if(!ideas.length){box.innerHTML=`<div class="empty">Pas encore d'épreuve. Bouée relais, pétanque à l'aveugle, quiz sur les 30 ans… note la première idée au-dessus.</div>`;return}
-  box.innerHTML=[...ideas].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(i=>`<div class="card idea" data-id="${i.id}"><h3>${esc(i.title)}</h3>${i.desc?`<p>${esc(i.desc)}</p>`:''}<div class="meta"><span>${i.author?'Proposé par '+esc(i.author):''}</span><button class="x" data-del="ideas" aria-label="Supprimer">Suppr.</button></div></div>`).join('');
+  const box=$('#ideas'),pz=$('#prize');
+  if(document.activeElement!==pz)pz.value=olymp.cadeau||'';
+  if(!ideas.length){box.innerHTML=`<div class="empty">Pas encore d'épreuve. Note la première idée juste en dessous.</div>`;return}
+  // Garde la saisie en cours si une mise à jour distante arrive pendant l'édition.
+  const ed=box.querySelector(`.form[data-id="${editingIdea}"]`),draft={};
+  if(ed)ed.querySelectorAll('[data-k]').forEach(el=>draft[el.dataset.k]=el.type==='checkbox'?el.checked:el.value);
+  box.innerHTML=sortedIdeas().map((i,n)=>i.id===editingIdea?(i={...i,...draft},`<div class="card idea form" data-id="${i.id}">
+      <input type="text" data-k="title" id="it-${i.id}" value="${esc(i.title)}" aria-label="Nom de l'épreuve">
+      <textarea data-k="desc" id="id-${i.id}" rows="5" aria-label="Description">${esc(i.desc)}</textarea>
+      <textarea data-k="materiel" id="im-${i.id}" rows="2" placeholder="Matériel" aria-label="Matériel">${esc(i.materiel)}</textarea>
+      <div class="bar"><input type="text" data-k="author" id="ia-${i.id}" value="${esc(i.author)}" placeholder="Proposé par" class="grow" aria-label="Proposé par">
+        <label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-k="unsure" ${i.unsure?'checked':''}> Pas sûr</label></div>
+      <div class="bar"><button class="btn small" data-idea-save>Enregistrer</button><button class="btn ghost small" data-idea-cancel>Annuler</button></div>
+    </div>`):`<div class="card idea${i.unsure?' unsure':''}" data-id="${i.id}">
+      <div class="head"><h3><span class="n">${n+1}.</span>${esc(i.title)}</h3>${i.unsure?'<span class="pill p-mute">Pas sûr</span>':''}</div>
+      ${i.desc?`<p>${esc(i.desc)}</p>`:''}
+      ${i.materiel?`<div class="mat"><b>Matériel :</b> ${esc(i.materiel)}</div>`:''}
+      <div class="meta"><span>${i.author?'Proposé par '+esc(i.author):''}</span><span class="acts"><button class="x" data-idea-edit>Modifier</button><button class="x" data-del="ideas" aria-label="Supprimer">Suppr.</button></span></div></div>`).join('');
 }
-$('#addIdea').onclick=()=>{const title=$('#ideaTitle').value.trim();if(!title||!db)return;const desc=$('#ideaDesc').value.trim(),author=$('#ideaAuthor').value.trim();$('#ideaTitle').value='';$('#ideaDesc').value='';save(db.collection('ideas').add({title,desc,author,createdAt:Date.now()}))};
+$('#ideas').addEventListener('click',e=>{
+  const card=e.target.closest('[data-id]');if(!card)return;
+  if(e.target.closest('[data-idea-edit]')){editingIdea=card.dataset.id;renderIdeas();card.ownerDocument.getElementById('it-'+editingIdea)?.focus();return}
+  if(e.target.closest('[data-idea-cancel]')){editingIdea=null;renderIdeas();return}
+  if(e.target.closest('[data-idea-save]')&&db){
+    const v=k=>card.querySelector(`[data-k="${k}"]`);
+    const title=v('title').value.trim();if(!title){toast("Il faut un nom d'épreuve.");return}
+    save(db.doc('ideas/'+card.dataset.id).update({title,desc:v('desc').value.trim(),materiel:v('materiel').value.trim(),author:v('author').value.trim(),unsure:v('unsure').checked}));
+    editingIdea=null;renderIdeas();
+  }
+});
+$('#prize').addEventListener('change',e=>{if(db)save(db.doc('settings/olympiades').set({...olymp,cadeau:e.target.value.trim()}))});
+$('#addIdea').onclick=()=>{const title=$('#ideaTitle').value.trim();if(!title||!db)return;const desc=$('#ideaDesc').value.trim(),author=$('#ideaAuthor').value.trim();$('#ideaTitle').value='';$('#ideaDesc').value='';const order=ideas.reduce((m,i)=>Math.max(m,Number(i.order)||0),0)+1;save(db.collection('ideas').add({title,desc,author,order,createdAt:Date.now()}))};
 
 /* ---------- data (Firebase) ---------- */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -544,6 +587,7 @@ function startData(){
   const sub=(col,set)=>unsubs.push(db.collection(col).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));render()},()=>toast('Connexion aux données perdue, recharge la page.')));
   sub('guests',v=>guests=v);sub('expenses',v=>expenses=v);sub('todos',v=>todos=v);sub('ideas',v=>ideas=v);
   unsubs.push(db.doc('settings/prix').onSnapshot(s=>{if(s.exists)prices={deuxNuits:80,uneNuit:50,soiree:0,...s.data()};render()}));
+  unsubs.push(db.doc('settings/olympiades').onSnapshot(s=>{olymp=s.exists?s.data():{};render()}));
 }
 function stopData(){unsubs.forEach(u=>{try{u()}catch(e){}});unsubs=[];db=null;guests=[];expenses=[];todos=[];ideas=[]}
 

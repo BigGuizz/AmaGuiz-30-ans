@@ -61,7 +61,10 @@ La ligne dont le libellé contient « mas » sert au calcul « coût du mas par 
 
 **`todos/{id}`** : `text`, `who`, `done`, `createdAt`
 
-**`ideas/{id}`** : épreuves d'olympiades, `title`, `desc`, `author`, `createdAt`
+**`ideas/{id}`** : épreuves d'olympiades, `title`, `desc`, `author`, `createdAt`, et optionnels `order` (numéro d'affichage),
+`materiel` string, `unsure` bool (« pas sûr »). Modifiables depuis l'UI (bouton Modifier).
+
+**`settings/olympiades`** : `{ cadeau }`, le lot de l'équipe gagnante (texte libre). Le préambule (équipes par gîte, barème) est en dur dans `index.html`.
 
 **`settings/prix`** : `{ deuxNuits, uneNuit, soiree }` en €. Valeurs par défaut dans le code : 80 / 50 / 0.
 
@@ -112,7 +115,7 @@ office-cuisine pro (vaisselle pour 50, tireuse à bière), barbecue géant, pisc
 - ✅ Le fichier `download` était le `.gitignore` uploadé sous un mauvais nom (aucune donnée d'invité) : renommé en `.gitignore`.
 - ⏳ À vérifier : domaine `bigguizz.github.io` ajouté aux domaines autorisés de Firebase Auth, import des données fait.
 - Données au moment de la migration : 33 invités (une partie avec séjour et heure d'arrivée, certains à aller chercher à la gare,
-  25 avec photo), 8 tâches, 5 dépenses, olympiades vides.
+  25 avec photo), 8 tâches, 5 dépenses, olympiades vides au départ, puis 9 épreuves ajoutées par Claude (mi-octobre).
 - Budget saisi : mas 2 000 €, DJ 350 €, gâteaux 120 € minimum, tartiflette du samedi et brunch du dimanche estimés
   à 150–200 € chacun (175 € saisis). Tarifs annoncés aux invités : 80 € les 2 nuits, 50 € une nuit.
   **Tarif « soirée seulement » pas encore décidé.** Le budget est structurellement déficitaire avec ces tarifs.
