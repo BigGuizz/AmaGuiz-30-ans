@@ -53,6 +53,8 @@ Toute nouvelle collection doit être ajoutée à cette liste, sinon les écritur
 - `room` : id de couchage (`c1-1`, `th-3`…) ou `''`
 - `photo` : data URI JPEG 96×96 en base64 (~4 Ko), optionnel
 - `order` number (tri de la liste), `createdAt` ms
+- `specialBy` : `''` | `guilhem` | `amandine` (organisateur qui accorde un tarif spécial), `specialPrice` number (€ payés par l'invité).
+  Champs optionnels : absents sur les anciens invités, ce qui équivaut à « pas de tarif spécial ».
 
 **`expenses/{id}`** : `label`, `amount` (€), `createdAt`.
 La ligne dont le libellé contient « mas » sert au calcul « coût du mas par nuit dormie ».
@@ -71,7 +73,11 @@ La ligne dont le libellé contient « mas » sert au calcul « coût du mas par 
 - **Couchages** : constante `GITES` codée en dur dans `index.html` (composition réelle du gîte, voir plus bas).
   L'occupation d'un espace est vérifiée **par nuit**, donc un « vendredi seul » et un « samedi seul » peuvent partager un lit.
   Passer un invité en `decline` ou sur un séjour sans nuit vide son `room`.
-- **Budget** : solde = participations attendues − dépenses. Si le solde est négatif, l'UI propose le % de hausse des tarifs pour tomber juste.
+- **Tarifs spéciaux** (bloc dans l'onglet Budget, une colonne par organisateur) : l'invité paie `specialPrice`,
+  et l'écart avec le tarif normal (`giftOf`) est **à la charge de l'organisateur qui l'accorde**, pas du budget commun.
+  Un tarif spécial passe avant `offert` (l'ajouter décoche `offert`, cocher `offert` retire le tarif spécial).
+  Liste des organisateurs : constante `ORGAS`.
+- **Budget** : solde = participations attendues + cadeaux des organisateurs − dépenses. Si le solde est négatif, l'UI propose le % de hausse des tarifs pour tomber juste.
 - **Saisie** : un champ texte s'enregistre au `change` (en quittant le champ). Tant qu'un input dans un bloc `[data-live]`
   a le focus, `render()` est différé jusqu'au `focusout`, pour ne pas écraser la frappe pendant une mise à jour distante.
 - **Suppression** en deux clics (le bouton s'arme 3 s puis « Confirmer »). Pas de `confirm()`.

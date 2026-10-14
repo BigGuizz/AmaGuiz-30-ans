@@ -113,6 +113,10 @@ td .name{font-weight:600}
 .pos{color:var(--ok)} .neg{color:var(--bad)}
 .priceset{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .priceset label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.specgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
+.spec{display:grid;gap:8px;min-width:0;align-content:start}
+.spec .row .nm{min-width:0}
+.spec .row .nm>span:last-child{min-width:0;overflow-wrap:anywhere;line-height:1.3}
 .todo{display:grid;grid-template-columns:22px 1fr auto auto;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)}
 .todo:last-child{border-bottom:0}
 .todo.done .t{text-decoration:line-through;color:var(--muted)}
@@ -162,7 +166,7 @@ td .name{font-weight:600}
     </div>
     <div class="chips" id="filters"></div>
     <div id="guestList"></div>
-    <p class="note">Le tarif se calcule tout seul à partir du séjour : 2 nuits, 1 nuit ou soirée seulement. Les montants se règlent dans l'onglet Budget. « Offert » met la participation à 0 € (DJ, organisateurs…).</p>
+    <p class="note">Le tarif se calcule tout seul à partir du séjour : 2 nuits, 1 nuit ou soirée seulement. Les montants se règlent dans l'onglet Budget. « Offert » met la participation à 0 € (DJ, organisateurs…). Les tarifs spéciaux accordés par Guilhem ou Amandine se règlent dans l'onglet Budget.</p>
   </section>
 
   <section class="panel" id="p-couchages" data-panel="couchages" hidden>
@@ -203,6 +207,7 @@ td .name{font-weight:600}
       </div>
       <div class="card" id="perGuest"></div>
     </div>
+    <div class="card" id="specials" data-live></div>
   </section>
 
   <section class="panel" id="p-todo" data-panel="todo" hidden>
@@ -266,6 +271,7 @@ const STAYS={
  'soiree':{label:'Soirée seulement',nights:[],k:'soiree'}};
 const STATUS={invite:'Invité',confirme:'Confirmé',peutetre:'Peut-être',decline:'Ne vient pas'};
 const DAYS={'':'—',ven:'Vendredi',sam:'Samedi',dim:'Dimanche'};
+const ORGAS={guilhem:'Guilhem',amandine:'Amandine'};
 
 let db=null, guests=[], expenses=[], todos=[], ideas=[], prices={deuxNuits:80,uneNuit:50,soiree:0}, pricesSeen=false;
 let filter='tous', dirty=false;
@@ -280,8 +286,13 @@ async function save(p){try{await p}catch(e){toast(e&&e.code==='invalid_argument'
 const av=(g,cls='')=>typeof g.photo==='string'&&g.photo.startsWith('data:image/')?`<img class="av ${cls}" src="${esc(g.photo)}" alt="">`:`<span class="av ${cls}" aria-hidden="true">${esc(String(g.name||'?').trim().charAt(0).toUpperCase())}</span>`;
 const comes=g=>g.status!=='decline';
 const nightsOf=g=>comes(g)?(STAYS[g.stay||'']||STAYS['']).nights:[];
-const priceOf=g=>{const s=STAYS[g.stay||''];if(!s||!s.k||g.offert)return 0;return Number(prices[s.k])||0};
+const baseOf=g=>{const s=STAYS[g.stay||''];return s&&s.k?Number(prices[s.k])||0:0};
+const hasSpecial=g=>!!ORGAS[g.specialBy];
+// Tarif payé par l'invité. Un tarif spécial passe avant « Offert ».
+const priceOf=g=>{if(!STAYS[g.stay||'']?.k)return 0;if(hasSpecial(g))return Math.max(0,Number(g.specialPrice)||0);return g.offert?0:baseOf(g)};
 const counted=g=>comes(g)&&g.stay;
+// Écart avec le tarif normal, à la charge de l'organisateur qui l'accorde (pas du budget commun).
+const giftOf=g=>hasSpecial(g)&&counted(g)?Math.max(0,baseOf(g)-priceOf(g)):0;
 const sorted=()=>[...guests].sort((a,b)=>(a.order??1e12)-(b.order??1e12)||String(a.name).localeCompare(b.name,'fr'));
 
 /* ---------- tabs ---------- */
@@ -308,7 +319,9 @@ function totals(){
   const dep=expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
   const due=guests.filter(counted).reduce((s,g)=>s+priceOf(g),0);
   const paid=guests.filter(g=>counted(g)&&g.paid).reduce((s,g)=>s+priceOf(g),0);
-  return {ven,sam,dep,due,paid,conf:guests.filter(g=>g.status==='confirme').length,gare:guests.filter(g=>comes(g)&&g.gare).length};
+  const gifts={};for(const k in ORGAS)gifts[k]=guests.filter(g=>g.specialBy===k).reduce((s,g)=>s+giftOf(g),0);
+  const income=due+Object.values(gifts).reduce((s,v)=>s+v,0);
+  return {ven,sam,dep,due,paid,gifts,income,conf:guests.filter(g=>g.status==='confirme').length,gare:guests.filter(g=>comes(g)&&g.gare).length};
 }
 function meter(n,cap){const p=Math.min(100,n/cap*100);return `<div class="meter${n>cap?' over':''}"><i style="width:${p}%"></i></div>`}
 function renderStats(){
@@ -317,7 +330,7 @@ function renderStats(){
    <div class="stat"><span class="eyebrow">Confirmés</span><b>${t.conf}<span style="color:var(--muted);font-size:16px"> / ${guests.length}</span></b><small>sur la liste</small></div>
    <div class="stat"><span class="eyebrow">Nuit de vendredi</span><b>${t.ven}<span style="color:var(--muted);font-size:16px"> / ${CAPACITY}</span></b>${meter(t.ven,CAPACITY)}</div>
    <div class="stat"><span class="eyebrow">Nuit de samedi</span><b>${t.sam}<span style="color:var(--muted);font-size:16px"> / ${CAPACITY}</span></b>${meter(t.sam,CAPACITY)}</div>
-   <div class="stat"><span class="eyebrow">Solde prévisionnel</span><b class="${t.due-t.dep>=0?'pos':'neg'}">${t.due-t.dep>=0?'+':''}${eur(t.due-t.dep)}</b><small>participations − dépenses</small></div>`;
+   <div class="stat"><span class="eyebrow">Solde prévisionnel</span><b class="${t.income-t.dep>=0?'pos':'neg'}">${t.income-t.dep>=0?'+':''}${eur(t.income-t.dep)}</b><small>participations − dépenses</small></div>`;
 }
 
 function renderGuests(){
@@ -336,7 +349,7 @@ function renderGuests(){
       <td><input type="time" data-f="arrTime" id="h-${g.id}" value="${esc(g.arrTime)}" aria-label="Heure d'arrivée"></td>
       <td class="c"><input type="checkbox" data-f="gare" id="g-${g.id}" ${g.gare?'checked':''} aria-label="À chercher à la gare"></td>
       <td><input type="text" data-f="note" id="o-${g.id}" value="${esc(g.note)}" placeholder="Train, allergie, voiture…" aria-label="Note"></td>
-      <td class="num" style="text-align:right">${g.stay&&comes(g)?eur(priceOf(g)):'<span class="pill p-mute">—</span>'}</td>
+      <td class="num" style="text-align:right">${g.stay&&comes(g)?eur(priceOf(g)):'<span class="pill p-mute">—</span>'}${hasSpecial(g)?` <span class="pill p-sun" title="Tarif spécial accordé par ${ORGAS[g.specialBy]}">${ORGAS[g.specialBy].charAt(0)}</span>`:''}</td>
       <td class="c"><input type="checkbox" data-f="offert" id="f-${g.id}" ${g.offert?'checked':''} aria-label="Offert"></td>
       <td class="c"><input type="checkbox" data-f="paid" id="p-${g.id}" ${g.paid?'checked':''} aria-label="Payé"></td>
       <td><button class="x" data-del="guests" aria-label="Supprimer">Suppr.</button></td></tr>`).join('')}
@@ -349,6 +362,7 @@ $('#guestList').addEventListener('change',e=>{
   const patch={[f]:v};
   if(f==='stay'&&!STAYS[v].nights.length)patch.room='';
   if(f==='status'&&v==='decline')patch.room='';
+  if(f==='offert'&&v&&hasSpecial(guests.find(g=>g.id===row.dataset.id)||{}))patch.specialBy='';
   save(db.doc('guests/'+row.dataset.id).update(patch));
 });
 async function addGuest(){
@@ -403,11 +417,13 @@ function renderBudget(){
      +`<div class="total"><span>Total</span><span class="num">${eur(t.dep)}</span></div>`;
   const people=guests.filter(counted);
   const nNights=people.reduce((s,g)=>s+nightsOf(g).length,0);
-  const solde=t.due-t.dep;
+  const solde=t.income-t.dep;
+  const giftRows=Object.entries(ORGAS).filter(([k])=>guests.some(g=>g.specialBy===k)).map(([k,l])=>`<span>Tarifs spéciaux, à la charge ${/^[aeiouy]/i.test(l)?"d'":'de '}${l}</span><span class="v">${eur(t.gifts[k])}</span>`).join('');
   $('#balance').innerHTML=`<h3>Équilibre</h3>
     <div><div class="eyebrow">Solde si tout le monde paie</div><div class="big ${solde>=0?'pos':'neg'}">${solde>=0?'+':''}${eur(solde)}</div></div>
     <div class="kv">
       <span>Participations attendues</span><span class="v">${eur(t.due)}</span>
+      ${giftRows}
       <span>Déjà encaissé</span><span class="v">${eur(t.paid)}</span>
       <span>Reste à encaisser</span><span class="v">${eur(t.due-t.paid)}</span>
       <span>Dépenses</span><span class="v">${eur(t.dep)}</span>
@@ -417,14 +433,54 @@ function renderBudget(){
       <span>Coût réel par personne</span><span class="v">${people.length?eur(t.dep/people.length):'—'}</span>
       <span>Coût du mas par nuit dormie</span><span class="v">${nNights?eur((expenses.find(e=>/mas/i.test(e.label))?.amount||0)/nNights):'—'}</span>
     </div>
-    ${t.due>0&&solde<0?`<p class="note">Pour tomber juste avec ces invités, il faudrait monter les tarifs d'environ ${Math.round((t.dep/t.due-1)*100)} % : ${eur(prices.deuxNuits*t.dep/t.due)} les 2 nuits, ${eur(prices.uneNuit*t.dep/t.due)} la nuit.</p>`:''}
+    ${t.income>0&&solde<0?`<p class="note">Pour tomber juste avec ces invités, il faudrait monter les tarifs d'environ ${Math.round((t.dep/t.income-1)*100)} % : ${eur(prices.deuxNuits*t.dep/t.income)} les 2 nuits, ${eur(prices.uneNuit*t.dep/t.income)} la nuit.</p>`:''}
     ${!people.length?`<p class="note">Le budget se remplit à mesure que tu renseignes le séjour de chaque invité.</p>`:''}`;
   ['pr2','pr1','pr0'].forEach(id=>{const el=$('#'+id);if(document.activeElement!==el)el.value=prices[el.dataset.k]??0});
   const by=k=>people.filter(g=>g.stay===k);
-  const rows=[['ven-sam','2 nuits'],['ven','Vendredi seul'],['sam','Samedi seul'],['soiree','Soirée']].map(([k,l])=>{const gs=by(k),off=gs.filter(g=>g.offert).length;return `<span>${l} <span class="note">· ${gs.length} pers.${off?` dont ${off} offert`:''}</span></span><span class="v">${eur(gs.reduce((s,g)=>s+priceOf(g),0))}</span>`}).join('');
+  const rows=[['ven-sam','2 nuits'],['ven','Vendredi seul'],['sam','Samedi seul'],['soiree','Soirée']].map(([k,l])=>{const gs=by(k),off=gs.filter(g=>g.offert&&!hasSpecial(g)).length,sp=gs.filter(hasSpecial).length;return `<span>${l} <span class="note">· ${gs.length} pers.${off?` dont ${off} offert`:''}${sp?`${off?',':' dont'} ${sp} tarif spécial`:''}</span></span><span class="v">${eur(gs.reduce((s,g)=>s+priceOf(g),0))}</span>`}).join('');
   $('#perGuest').innerHTML=`<h3>Répartition des participations</h3><div class="kv">${rows}</div>
    <span class="note">${guests.filter(g=>comes(g)&&!g.stay).length} invité(s) sans séjour renseigné ne sont pas comptés.</span>`;
+  renderSpecials(t);
 }
+/* Tarifs spéciaux : chaque organisateur offre une réduction à certains invités et paie la différence de sa poche. */
+const specDraft={};
+function renderSpecials(t){
+  const cand=sorted().filter(g=>comes(g)&&!hasSpecial(g));
+  $('#specials').innerHTML=`<div class="head"><h3>Tarifs spéciaux</h3></div>
+    <p class="note" style="margin:0">L'invité paie le tarif indiqué. La différence avec le tarif normal est à la charge de celui qui l'accorde, pas du budget commun.</p>
+    <div class="specgrid">${Object.entries(ORGAS).map(([k,label])=>{
+      const list=sorted().filter(g=>g.specialBy===k);
+      const d=specDraft[k]||{};if(d.id&&!cand.some(g=>g.id===d.id))d.id='';
+      return `<div class="spec">
+        <div class="head"><b>Accordés par ${label}</b><span class="note">à sa charge : <span class="num">${eur(t.gifts[k])}</span></span></div>
+        <div class="money">${list.length?list.map(g=>`<div class="row" data-id="${g.id}">
+          <span class="nm">${av(g,'s')}<span>${esc(g.name)}<br><span class="note">${counted(g)?`au lieu de ${eur(baseOf(g))} · cadeau ${eur(giftOf(g))}`:(comes(g)?'séjour à préciser, pas compté':'ne vient pas, pas compté')}</span></span></span>
+          <input type="number" min="0" data-f="specialPrice" id="sp-${g.id}" value="${Math.max(0,Number(g.specialPrice)||0)}" aria-label="Tarif spécial de ${esc(g.name)}, en euros">
+          <button class="x" data-unspecial="${g.id}" aria-label="Retirer le tarif spécial de ${esc(g.name)}">×</button></div>`).join(''):`<span class="note" style="padding:6px 0">Personne pour l'instant.</span>`}</div>
+        <div class="bar">
+          <select id="spg-${k}" data-draft="${k}" class="grow" aria-label="Invité à qui ${label} accorde un tarif spécial"><option value="">Choisir un invité…</option>${cand.map(g=>`<option value="${g.id}"${g.id===d.id?' selected':''}>${esc(g.name)}${g.stay?` · ${eur(baseOf(g))}`:''}</option>`).join('')}</select>
+          <input type="number" min="0" id="spp-${k}" data-draft="${k}" placeholder="€" value="${esc(d.price??'')}" style="width:80px" aria-label="Tarif spécial, en euros">
+          <button class="btn small" data-addspecial="${k}">Ajouter</button>
+        </div></div>`}).join('')}</div>`;
+}
+$('#specials').addEventListener('input',e=>{const k=e.target.dataset.draft;if(!k)return;const d=specDraft[k]=specDraft[k]||{};if(e.target.tagName==='SELECT')d.id=e.target.value;else d.price=e.target.value});
+$('#specials').addEventListener('change',e=>{
+  const k=e.target.dataset.draft;if(k){const d=specDraft[k]=specDraft[k]||{};if(e.target.tagName==='SELECT')d.id=e.target.value;else d.price=e.target.value;return}
+  const row=e.target.closest('[data-id]');if(!row||e.target.dataset.f!=='specialPrice'||!db)return;
+  save(db.doc('guests/'+row.dataset.id).update({specialPrice:Math.max(0,Number(e.target.value)||0)}));
+});
+$('#specials').addEventListener('click',e=>{
+  if(!db)return;
+  const un=e.target.closest('[data-unspecial]');
+  if(un){save(db.doc('guests/'+un.dataset.unspecial).update({specialBy:'',specialPrice:0}));return}
+  const add=e.target.closest('[data-addspecial]');if(!add)return;
+  const k=add.dataset.addspecial,d=specDraft[k]||{};
+  if(!d.id){toast('Choisis d\'abord un invité.');return}
+  if(d.price===undefined||d.price===''){toast('Indique le tarif spécial (0 si c\'est offert).');return}
+  // « Offert » est décoché : la réduction passe désormais par ce tarif spécial.
+  save(db.doc('guests/'+d.id).update({specialBy:k,specialPrice:Math.max(0,Number(d.price)||0),offert:false}));
+  specDraft[k]={};
+});
 $('#expenses').addEventListener('change',e=>{const row=e.target.closest('[data-id]'),f=e.target.dataset.f;if(!row||!f||!db)return;save(db.doc('expenses/'+row.dataset.id).update({[f]:f==='amount'?Number(e.target.value)||0:e.target.value.trim()}))});
 $('#addExp').onclick=()=>{const l=$('#newExpLabel').value.trim(),a=Number($('#newExpAmount').value)||0;if(!l||!db)return;$('#newExpLabel').value='';$('#newExpAmount').value='';save(db.collection('expenses').add({label:l,amount:a,createdAt:Date.now()}))};
 document.querySelectorAll('.priceset input').forEach(el=>el.addEventListener('change',()=>{if(!db)return;const p={...prices,[el.dataset.k]:Number(el.value)||0};save(db.doc('settings/prix').set(p))}));
