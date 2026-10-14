@@ -54,6 +54,7 @@ nav.tabs button{font:600 14.5px var(--f-body);color:var(--muted);background:none
 nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--sun)}
 nav.tabs button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
 .panel{display:grid;gap:18px}
+.panel>*{min-width:0}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .bar .grow{flex:1 1 220px;min-width:0}
 input[type=text],input[type=number],input[type=time],select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 9px;min-width:0}
@@ -78,6 +79,7 @@ tr:last-child td{border-bottom:0}
 tr.declined td{opacity:.5}
 td input[type=text]{width:100%}
 td.c{text-align:center}
+td.num{white-space:nowrap}
 td .name{font-weight:600}
 .nm{display:flex;align-items:center;gap:8px}
 .av{width:30px;height:30px;border-radius:50%;flex:none;object-fit:cover;background:var(--sunk);display:inline-grid;place-items:center;font:600 12px var(--f-body);color:var(--muted)}
@@ -122,8 +124,10 @@ td .name{font-weight:600}
 .spec{display:grid;gap:8px;min-width:0;align-content:start}
 .spec .row .nm{min-width:0}
 .spec .row .nm>span:last-child{min-width:0;overflow-wrap:anywhere;line-height:1.3}
-.todo{display:grid;grid-template-columns:22px 1fr auto auto;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)}
+.todo{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px;align-items:center;padding:4px 6px 4px 4px;border-bottom:1px solid var(--line)}
 .todo:last-child{border-bottom:0}
+.todo .ck{display:grid;place-items:center;min-width:40px;min-height:40px;cursor:pointer}
+.todo .tx{display:grid;gap:1px;min-width:0;padding:6px 0;cursor:pointer;overflow-wrap:anywhere}
 .todo.done .t{text-decoration:line-through;color:var(--muted)}
 .todo .who{font-size:12.5px;color:var(--muted)}
 .list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
@@ -169,7 +173,120 @@ td .name{font-weight:600}
 .note{font-size:13px;color:var(--muted)}
 #banner{background:var(--warn-soft);color:var(--warn);border-radius:var(--r);padding:10px 14px;font-weight:500}
 #toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;z-index:20;max-width:calc(100% - 32px)}
-@media (max-width:560px){.money .row{grid-template-columns:1fr 92px 30px}.todo{grid-template-columns:22px 1fr auto}.todo .who{grid-column:2}}
+.stat .of{color:var(--muted);font-size:16px}
+.p-sea{background:color-mix(in srgb,var(--sea) 16%,transparent);color:var(--sea)}
+.chip .cn{font-family:var(--f-mono);font-size:11.5px;opacity:.7}
+
+/* ---------- Onglets : icônes (barre du bas sur mobile) ---------- */
+.tabs .ti{display:none;position:relative}
+.tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs .badge{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 5px;margin-left:6px;border-radius:999px;background:var(--sun);color:#1D2A21;font:700 10.5px var(--f-body);vertical-align:2px}
+.tabs .badge[hidden]{display:none!important}
+
+/* ---------- Invités en cartes (< 900 px) ---------- */
+.glist{display:grid;gap:8px}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.gcard.open{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:0 2px 10px -6px color-mix(in srgb,var(--ink) 40%,transparent)}
+.gcard.declined .gsum{opacity:.55}
+.gsum{all:unset;box-sizing:border-box;display:grid;grid-template-columns:40px minmax(0,1fr) auto 18px;gap:12px;align-items:center;width:100%;padding:12px 12px 12px 14px;cursor:pointer;border-radius:12px;-webkit-tap-highlight-color:transparent}
+.gsum:focus-visible{outline:2px solid var(--sea);outline-offset:-2px}
+.gsum:active{background:var(--sunk)}
+.gsum .av{width:40px;height:40px;font-size:15px}
+.gmain{display:grid;gap:1px;min-width:0}
+.gname{font-weight:600;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gmeta{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gmeta:empty{display:none}
+.gtags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.gtags .pill,.gprice .pill{font-size:11px;padding:1px 7px}
+.gprice{display:grid;justify-items:end;gap:4px;font-size:14px}
+.chev{width:18px;height:18px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.gcard.open .chev{transform:rotate(180deg)}
+.gedit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px;border-top:1px solid var(--line)}
+.fld{display:grid;gap:5px;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:0}
+.fld input,.fld select{width:100%;text-transform:none;letter-spacing:0;font-weight:400}
+.full{grid-column:1/-1}
+.togs{display:flex;flex-wrap:wrap;gap:8px}
+.tog{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 14px 0 12px;border:1px solid var(--line);border-radius:999px;font-weight:500;font-size:14px;cursor:pointer;background:var(--surface);-webkit-tap-highlight-color:transparent}
+.tog input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.tog::before{content:"";width:18px;height:18px;border-radius:50%;border:1.5px solid var(--muted);box-sizing:border-box;flex:none}
+.tog:has(input:checked){background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.tog:has(input:checked)::before{border:0;background:var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat}
+.tog:has(input:focus-visible){outline:2px solid var(--sea);outline-offset:2px}
+.gfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.x.del{color:var(--bad)}
+
+/* ---------- Téléphone ---------- */
+.stat .sm{display:none}
+@media (max-width:640px){
+  .wrap{padding:16px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+  header.top{gap:12px;margin-bottom:16px}
+  header.top h1{font-size:31px}
+  header.top .eyebrow{font-size:11px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .stat{padding:9px 12px;gap:3px}
+  .stat .eyebrow{font-size:10.5px}
+  .stat b{font-size:21px}
+  .stat .of{font-size:13px}
+  .stat small,.stat .lg{display:none}
+  .meter{height:5px}
+
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:30;margin:0;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;overflow:visible;border-bottom:0;border-top:1px solid var(--line);background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  nav.tabs button{display:grid;justify-items:center;align-content:center;gap:3px;min-height:54px;padding:4px 0;border:0;font-size:11px;letter-spacing:.01em;color:var(--muted);-webkit-tap-highlight-color:transparent}
+  nav.tabs button[aria-selected="true"]{color:var(--ink)}
+  .tabs .ti{display:grid;place-items:center;width:56px;height:30px;border-radius:999px;transition:background .15s}
+  nav.tabs button[aria-selected="true"] .ti{background:var(--sun-soft)}
+  .tabs .tl{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .tabs .badge{position:absolute;top:-3px;left:calc(50% + 6px);margin:0;height:16px;min-width:16px;font-size:10px;box-shadow:0 0 0 2px var(--surface)}
+  #toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+
+  .panel{gap:14px}
+  .card{padding:14px}
+  .grid2{grid-template-columns:minmax(0,1fr);gap:10px}
+  /* 16 px minimum : évite le zoom automatique d'iOS au focus */
+  input[type=text],input[type=number],input[type=time],select,textarea{font-size:16px;min-height:44px;padding:9px 11px}
+  .btn{min-height:44px;padding:10px 16px;font-size:15px}
+  .btn.small{min-height:40px;padding:8px 14px;font-size:14px}
+  .x{min-width:40px;min-height:40px;display:inline-grid;place-items:center;padding:4px 8px}
+  input[type=checkbox]{width:22px;height:22px}
+  .bar.add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+  .bar.add>:first-child{grid-column:1/-1}
+  .bar.add>*{width:auto!important;min-width:0}
+
+  .chips{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding:2px 16px;scrollbar-width:none;scroll-padding-inline:16px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;min-height:38px;padding:6px 14px}
+
+  .money .row{grid-template-columns:minmax(0,1fr) 84px 40px}
+  .kv{gap:7px 12px}
+  .big{font-size:30px}
+
+  .room{gap:8px}
+  .occ{gap:6px}
+  .occ .who{min-height:34px;font-size:14px}
+  .occ .who button{min-width:32px;min-height:32px;font-size:17px}
+  .occ select{flex:0 0 auto;width:auto;min-height:40px;font-size:15px;padding:6px 10px}
+  #nightMeters{display:none}
+  .info{font-size:14px}
+
+  .olymp-title{align-items:flex-start;gap:12px}
+  .medals{font-size:34px}
+  .rule{grid-template-columns:30px minmax(0,1fr);column-gap:10px;align-items:start}
+  .rule .ico{grid-row:span 3;font-size:22px}
+  .rule.prize input{grid-column:2}
+  .teams{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .team:last-child:nth-child(odd){grid-column:1/-1}
+  .priceset{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .priceset label{align-content:end;line-height:1.3}
+  .togs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tog{justify-content:center;padding:0 8px}
+  .team{padding:12px 8px}
+  .team .ico{font-size:28px}
+  .idea{padding:16px}
+  .ihead .ico{width:44px;height:44px;font-size:24px;border-radius:12px}
+  .matos-g label{min-height:40px}
+  .foot{margin-top:28px}
+}
+@media (max-width:360px){.gsum{grid-template-columns:36px minmax(0,1fr) auto;gap:10px}.gsum .chev{display:none}.gsum .av{width:36px;height:36px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 #login{max-width:380px;margin:12vh auto 0;padding:0 18px;display:grid;gap:14px}
@@ -191,17 +308,17 @@ td .name{font-weight:600}
     <div class="stats" id="stats"></div>
   </header>
   <div id="banner" hidden></div>
-  <nav class="tabs" role="tablist" id="tabs">
-    <button role="tab" data-tab="invites">Invités</button>
-    <button role="tab" data-tab="couchages">Couchages</button>
-    <button role="tab" data-tab="budget">Budget</button>
-    <button role="tab" data-tab="todo">To-do</button>
-    <button role="tab" data-tab="olympiades">Olympiades</button>
+  <nav class="tabs" role="tablist" id="tabs" aria-label="Sections">
+    <button role="tab" data-tab="invites"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="tl">Invités</span></button>
+    <button role="tab" data-tab="couchages"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg></span><span class="tl">Couchages</span></button>
+    <button role="tab" data-tab="budget"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10h12"/><path d="M4 14h9"/><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/></svg></span><span class="tl">Budget</span></button>
+    <button role="tab" data-tab="todo"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><span class="badge" id="todoBadge" hidden></span></span><span class="tl">To-do</span></button>
+    <button role="tab" data-tab="olympiades"><span class="ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span><span class="tl">Olympiades</span></button>
   </nav>
 
   <section class="panel" id="p-invites" data-panel="invites">
     <div class="bar">
-      <input type="text" id="newGuest" class="grow" placeholder="Prénom de l'invité (ex. Léa, le copain de Laurie…)">
+      <input type="text" id="newGuest" class="grow" placeholder="Ajouter un invité…" aria-label="Prénom du nouvel invité">
       <button class="btn" id="addGuest">Ajouter</button>
     </div>
     <div class="chips" id="filters"></div>
@@ -232,12 +349,12 @@ td .name{font-weight:600}
       <div class="card">
         <div class="head"><h3>Dépenses</h3><span class="note">modifiables</span></div>
         <div class="money" id="expenses"></div>
-        <div class="bar"><input type="text" id="newExpLabel" class="grow" placeholder="Nouvelle dépense"><input type="number" id="newExpAmount" placeholder="€" style="width:100px"><button class="btn small" id="addExp">Ajouter</button></div>
+        <div class="bar add"><input type="text" id="newExpLabel" class="grow" placeholder="Nouvelle dépense"><input type="number" id="newExpAmount" placeholder="€" style="width:100px"><button class="btn small" id="addExp">Ajouter</button></div>
       </div>
       <div class="card">
         <h3>Tarifs annoncés</h3>
         <div class="priceset">
-          <label for="pr2">2 nuits (ven + sam)<input type="number" id="pr2" data-k="deuxNuits"></label>
+          <label for="pr2">2 nuits<input type="number" id="pr2" data-k="deuxNuits"></label>
           <label for="pr1">1 nuit<input type="number" id="pr1" data-k="uneNuit"></label>
           <label for="pr0">Soirée seulement<input type="number" id="pr0" data-k="soiree"></label>
         </div>
@@ -251,7 +368,7 @@ td .name{font-weight:600}
   </section>
 
   <section class="panel" id="p-todo" data-panel="todo" hidden>
-    <div class="bar">
+    <div class="bar add">
       <input type="text" id="newTodo" class="grow" placeholder="Une chose à faire…">
       <input type="text" id="newTodoWho" placeholder="Qui ?" style="width:130px">
       <button class="btn" id="addTodo">Ajouter</button>
@@ -349,6 +466,13 @@ const priceOf=g=>{if(!STAYS[g.stay||'']?.k)return 0;if(hasSpecial(g))return Math
 const counted=g=>comes(g)&&g.stay;
 // Écart avec le tarif normal, à la charge de l'organisateur qui l'accorde (pas du budget commun).
 const giftOf=g=>hasSpecial(g)&&counted(g)?Math.max(0,baseOf(g)-priceOf(g)):0;
+const narrow=matchMedia('(max-width: 899px)');
+const FILTERS={
+  tous:['Tous',g=>true],
+  confirme:['Confirmés',g=>g.status==='confirme'],
+  relancer:['À relancer',g=>g.status==='invite'||g.status==='peutetre'],
+  gare:['Navette gare',g=>comes(g)&&g.gare],
+  apayer:['Pas encore payé',g=>counted(g)&&!g.paid&&priceOf(g)>0]};
 const sorted=()=>[...guests].sort((a,b)=>(a.order??1e12)-(b.order??1e12)||String(a.name).localeCompare(b.name,'fr'));
 
 /* ---------- tabs ---------- */
@@ -357,7 +481,7 @@ function showTab(name){
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===name));
   try{localStorage.setItem('tab',name)}catch(e){}
 }
-$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showTab(b.dataset.tab)});
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const same=b.getAttribute('aria-selected')==='true';showTab(b.dataset.tab);if(!same||window.scrollY>0)window.scrollTo({top:0,behavior:same?'smooth':'auto'})});
 {let t=(location.hash||'').slice(1);if(!document.querySelector(`[data-panel="${t}"]`)){try{t=localStorage.getItem('tab')}catch(e){t=null}}showTab(document.querySelector(`[data-panel="${t}"]`)?t:'invites')}
 
 /* ---------- render ---------- */
@@ -383,18 +507,18 @@ function meter(n,cap){const p=Math.min(100,n/cap*100);return `<div class="meter$
 function renderStats(){
   const t=totals();
   $('#stats').innerHTML=`
-   <div class="stat"><span class="eyebrow">Confirmés</span><b>${t.conf}<span style="color:var(--muted);font-size:16px"> / ${guests.length}</span></b><small>sur la liste</small></div>
-   <div class="stat"><span class="eyebrow">Nuit de vendredi</span><b>${t.ven}<span style="color:var(--muted);font-size:16px"> / ${CAPACITY}</span></b>${meter(t.ven,CAPACITY)}</div>
-   <div class="stat"><span class="eyebrow">Nuit de samedi</span><b>${t.sam}<span style="color:var(--muted);font-size:16px"> / ${CAPACITY}</span></b>${meter(t.sam,CAPACITY)}</div>
-   <div class="stat"><span class="eyebrow">Solde prévisionnel</span><b class="${t.income-t.dep>=0?'pos':'neg'}">${t.income-t.dep>=0?'+':''}${eur(t.income-t.dep)}</b><small>participations − dépenses</small></div>`;
+   <div class="stat"><span class="eyebrow">Confirmés</span><b>${t.conf}<span class="of"> / ${guests.length}</span></b><small>sur la liste</small></div>
+   <div class="stat"><span class="eyebrow"><span class="lg">Nuit de </span>vendredi</span><b>${t.ven}<span class="of"> / ${CAPACITY}</span></b>${meter(t.ven,CAPACITY)}</div>
+   <div class="stat"><span class="eyebrow"><span class="lg">Nuit de </span>samedi</span><b>${t.sam}<span class="of"> / ${CAPACITY}</span></b>${meter(t.sam,CAPACITY)}</div>
+   <div class="stat"><span class="eyebrow">Solde<span class="lg"> prévisionnel</span></span><b class="${t.income-t.dep>=0?'pos':'neg'}">${t.income-t.dep>=0?'+':''}${eur(t.income-t.dep)}</b><small>participations − dépenses</small></div>`;
 }
 
 function renderGuests(){
-  const fs={tous:'Tous',confirme:'Confirmés',relancer:'À relancer',gare:'Navette gare',apayer:'Pas encore payé'};
-  $('#filters').innerHTML=Object.entries(fs).map(([k,v])=>`<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${v}</button>`).join('');
-  const list=sorted().filter(g=>filter==='tous'||(filter==='confirme'&&g.status==='confirme')||(filter==='relancer'&&(g.status==='invite'||g.status==='peutetre'))||(filter==='gare'&&comes(g)&&g.gare)||(filter==='apayer'&&counted(g)&&!g.paid&&priceOf(g)>0));
+  $('#filters').innerHTML=Object.entries(FILTERS).map(([k,[label,fn]])=>{const n=guests.filter(fn).length;return `<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${label}${k!=='tous'?` <span class="cn">${n}</span>`:''}</button>`}).join('');
+  const list=sorted().filter(FILTERS[filter][1]);
   if(!guests.length){$('#guestList').innerHTML=`<div class="empty">${db?'Aucun invité pour l\'instant. Ajoute le premier nom juste au-dessus.':'Chargement de la liste…'}</div>`;return}
   if(!list.length){$('#guestList').innerHTML=`<div class="empty">Personne dans ce filtre.</div>`;return}
+  if(narrow.matches){$('#guestList').innerHTML=`<div class="glist" data-live>${list.map(guestCard).join('')}</div>`;return}
   $('#guestList').innerHTML=`<div class="tablebox" data-live><table><thead><tr>
     <th style="width:210px">Invité</th><th>Statut</th><th>Séjour</th><th>Arrivée</th><th>Heure</th><th class="c">Gare</th><th>Note</th><th style="text-align:right">Tarif</th><th class="c">Offert</th><th class="c">Payé</th><th></th></tr></thead><tbody>
     ${list.map(g=>`<tr data-id="${g.id}" class="${g.status==='decline'?'declined':''}">
@@ -411,6 +535,43 @@ function renderGuests(){
       <td><button class="x" data-del="guests" aria-label="Supprimer">Suppr.</button></td></tr>`).join('')}
   </tbody></table></div>`;
 }
+/* Mobile (< 900 px) : une carte par invité, résumé lisible, détails éditables en accordéon. */
+const STAY_SHORT={'':'Séjour à préciser','ven-sam':'2 nuits','ven':'Vendredi seul','sam':'Samedi seul','soiree':'Soirée sans dormir'};
+const DAY_SHORT={ven:'ven.',sam:'sam.',dim:'dim.'};
+const openGuests=new Set();
+function guestCard(g){
+  const open=openGuests.has(g.id),st=g.status||'invite',sp=hasSpecial(g),billed=g.stay&&comes(g);
+  const meta=[STAY_SHORT[g.stay||'']||'',g.arrDay?`arrive ${DAY_SHORT[g.arrDay]}${g.arrTime?' '+g.arrTime:''}`:''].filter(Boolean).join(' · ');
+  const tags=[`<span class="pill st-${st}">${STATUS[st]}</span>`,comes(g)&&g.gare?'<span class="pill p-sea">Gare</span>':'',g.offert&&!sp?'<span class="pill p-mute">Offert</span>':'',sp?`<span class="pill p-sun">Tarif ${ORGAS[g.specialBy]}</span>`:''].join('');
+  return `<div class="gcard${st==='decline'?' declined':''}${open?' open':''}" data-id="${g.id}">
+    <button class="gsum" type="button" aria-expanded="${open}" aria-controls="ge-${g.id}">
+      ${av(g)}
+      <span class="gmain"><span class="gname">${esc(g.name)}</span><span class="gmeta">${esc(meta)}</span><span class="gtags">${tags}</span></span>
+      <span class="gprice">${billed?`<span class="num">${eur(priceOf(g))}</span>${priceOf(g)>0?`<span class="pill ${g.paid?'p-ok':'p-warn'}">${g.paid?'Payé':'À payer'}</span>`:''}`:'<span class="note">—</span>'}</span>
+      <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <div class="gedit" id="ge-${g.id}"${open?'':' hidden'}>
+      <label class="fld full" for="n-${g.id}">Nom<input type="text" data-f="name" id="n-${g.id}" value="${esc(g.name)}" autocomplete="off"></label>
+      <label class="fld" for="s-${g.id}">Statut<select data-f="status" id="s-${g.id}">${opt(STATUS,st)}</select></label>
+      <label class="fld" for="y-${g.id}">Séjour<select data-f="stay" id="y-${g.id}">${opt(STAYS,g.stay)}</select></label>
+      <label class="fld" for="d-${g.id}">Arrivée<select data-f="arrDay" id="d-${g.id}">${opt(DAYS,g.arrDay)}</select></label>
+      <label class="fld" for="h-${g.id}">Heure<input type="time" data-f="arrTime" id="h-${g.id}" value="${esc(g.arrTime)}"></label>
+      <label class="fld full" for="o-${g.id}">Note<input type="text" data-f="note" id="o-${g.id}" value="${esc(g.note)}" placeholder="Train, allergie, voiture…" autocomplete="off"></label>
+      <div class="togs full">
+        <label class="tog"><input type="checkbox" data-f="gare" id="g-${g.id}" ${g.gare?'checked':''}><span>Gare</span></label>
+        <label class="tog"><input type="checkbox" data-f="offert" id="f-${g.id}" ${g.offert?'checked':''}><span>Offert</span></label>
+        <label class="tog"><input type="checkbox" data-f="paid" id="p-${g.id}" ${g.paid?'checked':''}><span>Payé</span></label>
+      </div>
+      <div class="gfoot full"><span class="note">${billed?`Tarif ${eur(priceOf(g))}${sp?` · spécial ${ORGAS[g.specialBy]}, au lieu de ${eur(baseOf(g))}`:''}`:'Pas de tarif tant que le séjour n\'est pas renseigné.'}</span><button class="x del" data-del="guests">Supprimer</button></div>
+    </div></div>`;
+}
+$('#guestList').addEventListener('click',e=>{
+  const s=e.target.closest('.gsum');if(!s)return;
+  const c=s.closest('.gcard'),id=c.dataset.id,open=!openGuests.has(id);
+  open?openGuests.add(id):openGuests.delete(id);
+  c.classList.toggle('open',open);s.setAttribute('aria-expanded',open);c.querySelector('.gedit').hidden=!open;
+});
+narrow.addEventListener('change',()=>renderGuests());
 $('#filters').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){filter=b.dataset.f;renderGuests()}});
 $('#guestList').addEventListener('change',e=>{
   const row=e.target.closest('[data-id]'),f=e.target.dataset.f;if(!row||!f||!db)return;
@@ -519,7 +680,7 @@ function renderSpecials(t){
           <span class="nm">${av(g,'s')}<span>${esc(g.name)}<br><span class="note">${counted(g)?`au lieu de ${eur(baseOf(g))} · cadeau ${eur(giftOf(g))}`:(comes(g)?'séjour à préciser, pas compté':'ne vient pas, pas compté')}</span></span></span>
           <input type="number" min="0" data-f="specialPrice" id="sp-${g.id}" value="${Math.max(0,Number(g.specialPrice)||0)}" aria-label="Tarif spécial de ${esc(g.name)}, en euros">
           <button class="x" data-unspecial="${g.id}" aria-label="Retirer le tarif spécial de ${esc(g.name)}">×</button></div>`).join(''):`<span class="note" style="padding:6px 0">Personne pour l'instant.</span>`}</div>
-        <div class="bar">
+        <div class="bar add">
           <select id="spg-${k}" data-draft="${k}" class="grow" aria-label="Invité à qui ${label} accorde un tarif spécial"><option value="">Choisir un invité…</option>${cand.map(g=>`<option value="${g.id}"${g.id===d.id?' selected':''}>${esc(g.name)}${g.stay?` · ${eur(baseOf(g))}`:''}</option>`).join('')}</select>
           <input type="number" min="0" id="spp-${k}" data-draft="${k}" placeholder="€" value="${esc(d.price??'')}" style="width:80px" aria-label="Tarif spécial, en euros">
           <button class="btn small" data-addspecial="${k}">Ajouter</button>
@@ -559,13 +720,14 @@ function renderMatos(){
 $('#matos').addEventListener('change',e=>{const g=e.target.closest('[data-id]'),m=e.target.dataset.item;if(!g||m===undefined||!db)return;const i=ideas.find(x=>x.id===g.dataset.id);save(db.doc('ideas/'+g.dataset.id).update({matOk:{...(i&&i.matOk||{}),[m]:e.target.checked}}))});
 function renderTodos(){
   renderMatos();
+  const left=todos.filter(t=>!t.done).length,bd=$('#todoBadge');bd.textContent=left;bd.hidden=!left;
   const box=$('#todos');box.setAttribute('data-live','');
   if(!todos.length){box.innerHTML=`<div class="empty" style="border:0">Rien à faire pour l'instant. Ajoute une tâche au-dessus.</div>`;return}
   const list=[...todos].sort((a,b)=>(a.done-b.done)||((a.createdAt||0)-(b.createdAt||0)));
   box.innerHTML=list.map(t=>`<div class="todo${t.done?' done':''}" data-id="${t.id}">
-    <input type="checkbox" data-f="done" id="td-${t.id}" ${t.done?'checked':''} aria-label="Fait">
-    <span class="t">${esc(t.text)}</span><span class="who">${esc(t.who||'')}</span>
-    <button class="x" data-del="todos" aria-label="Supprimer">×</button></div>`).join('');
+    <label class="ck" for="td-${t.id}"><input type="checkbox" data-f="done" id="td-${t.id}" ${t.done?'checked':''} aria-label="Fait : ${esc(t.text)}"></label>
+    <label class="tx" for="td-${t.id}"><span class="t">${esc(t.text)}</span>${t.who?`<span class="who">${esc(t.who)}</span>`:''}</label>
+    <button class="x" data-del="todos" aria-label="Supprimer la tâche">×</button></div>`).join('');
 }
 $('#todos').addEventListener('change',e=>{const row=e.target.closest('[data-id]');if(row&&db)save(db.doc('todos/'+row.dataset.id).update({done:e.target.checked}))});
 function addTodo(){const t=$('#newTodo').value.trim();if(!t||!db)return;const who=$('#newTodoWho').value.trim();$('#newTodo').value='';save(db.collection('todos').add({text:t,who,done:false,createdAt:Date.now()}))}
