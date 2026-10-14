@@ -62,9 +62,12 @@ La ligne dont le libellé contient « mas » sert au calcul « coût du mas par 
 **`todos/{id}`** : `text`, `who`, `done`, `createdAt`
 
 **`ideas/{id}`** : épreuves d'olympiades, `title`, `desc`, `author`, `createdAt`, et optionnels `order` (numéro d'affichage),
-`materiel` string, `unsure` bool (« pas sûr »). Modifiables depuis l'UI (bouton Modifier).
+`materiel` string (un élément par ligne), `icon` emoji, `unsure` bool (« pas sûr »), `matOk` map `{élément: bool}`
+(coché dans la liste « Matériel des Olympiades » de l'onglet To-do). Modifiables depuis l'UI (bouton Modifier).
 
-**`settings/olympiades`** : `{ cadeau }`, le lot de l'équipe gagnante (texte libre). Le préambule (équipes par gîte, barème) est en dur dans `index.html`.
+**`settings/olympiades`** : `{ cadeau, teams: {c1: 'nom', …} }` : lot de l'équipe gagnante et noms d'équipes choisis.
+Le préambule (équipes par gîte, barème) et les noms par défaut (constante `TEAMS`, dieux de l'Olympe) sont en dur dans `index.html`.
+Les membres d'une équipe = invités placés dans ce gîte (onglet Couchages).
 
 **`settings/prix`** : `{ deuxNuits, uneNuit, soiree }` en €. Valeurs par défaut dans le code : 80 / 50 / 0.
 

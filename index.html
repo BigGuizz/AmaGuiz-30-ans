@@ -127,16 +127,43 @@ td .name{font-weight:600}
 .todo.done .t{text-decoration:line-through;color:var(--muted)}
 .todo .who{font-size:12.5px;color:var(--muted)}
 .list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
-.idea{border-left:4px solid var(--sun)}
-.idea p{margin:0;white-space:pre-wrap}
-.idea .head h3 .n{color:var(--muted);font-family:var(--f-mono);font-size:15px;margin-right:6px}
-.idea .mat{background:var(--sunk);border-radius:8px;padding:8px 10px;font-size:13.5px;white-space:pre-wrap}
-.idea.unsure{border-left-color:var(--line)}
+.idea{border-top:4px solid var(--sun);padding:18px 20px;gap:12px}
+.idea.unsure{border-top-color:var(--line)}
+.idea p{margin:0;white-space:pre-wrap;line-height:1.55}
+.ihead{display:flex;gap:14px;align-items:center}
+.ihead .ico{flex:none;width:52px;height:52px;border-radius:14px;background:var(--sun-soft);display:grid;place-items:center;font-size:28px;line-height:1}
+.idea.unsure .ihead .ico{background:var(--sunk)}
+.ihead .t{flex:1;min-width:0;display:grid;gap:2px}
+.ihead .t .eyebrow{font-size:11px}
+.mat{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mat .eyebrow{font-size:11px;margin-right:2px}
+.mat span.it{font-size:12.5px;background:var(--sunk);border-radius:999px;padding:3px 10px}
 .idea .acts{display:flex;gap:4px}
-.olymp-intro{border-top:4px solid var(--sun)}
-.olymp-intro p{margin:0}
-.prize{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--sun-soft);border-radius:8px;padding:10px 12px}
-.prize input{flex:1 1 200px}
+.ideas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.ideas{grid-template-columns:minmax(0,1fr)}}
+.olymp-intro{border-top:4px solid var(--sun);gap:16px}
+.olymp-title{display:flex;gap:14px;align-items:center}
+.olymp-title h2{font-size:clamp(24px,4vw,32px);font-weight:800}
+.olymp-title p{margin:2px 0 0;color:var(--muted)}
+.medals{font-size:44px;line-height:1}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.rule{background:var(--sunk);border-radius:var(--r);padding:12px 14px;display:grid;gap:3px;align-content:start;font-size:13.5px}
+.rule .ico{font-size:24px;line-height:1.2}
+.rule.prize{background:var(--sun-soft)}
+.rule.prize input{margin-top:4px;width:100%}
+.sec-head{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin-bottom:-6px}
+.sec-head h3{font-size:21px}
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.team{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:6px;align-content:start;text-align:center;justify-items:center}
+.team .ico{font-size:34px;line-height:1.1}
+.team input{text-align:center;font:700 16px var(--f-display);border-color:transparent;background:transparent;width:100%;padding:4px}
+.team input::placeholder{color:var(--ink);opacity:1}
+.team input:hover,.team input:focus{border-color:var(--line);background:var(--bg)}
+.team .gite{font-size:12px;color:var(--muted)}
+.team .occ{justify-content:center}
+.matos-g{display:grid;gap:4px;padding:10px 0;border-top:1px solid var(--line)}
+.matos-g label{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.matos-g label.ok span{text-decoration:line-through;color:var(--muted)}
 .idea .meta{font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
 .form{display:grid;gap:8px}
 .note{font-size:13px;color:var(--muted)}
@@ -230,21 +257,27 @@ td .name{font-weight:600}
       <button class="btn" id="addTodo">Ajouter</button>
     </div>
     <div class="list" id="todos"></div>
+    <div class="card" id="matos" data-live></div>
   </section>
 
   <section class="panel" id="p-olympiades" data-panel="olympiades" hidden>
     <div class="card olymp-intro">
-      <h3>Les Olympiades du Mas</h3>
-      <p>Des défis en équipes pour faire connaissance et cumuler des points, dans une ambiance conviviale.</p>
-      <p><b>Une équipe par gîte.</b> Ceux qui dorment ensemble jouent ensemble : on fait connaissance pendant les épreuves, et le soir on se retrouve sous le même toit. Les gîtes n'ont pas tous la même taille (de 4 à 10 couchages), donc on pourra rapprocher la Suite d'un gîte ou rééquilibrer à la marge, voire tirer les équipes au sort.</p>
-      <p><b>Les points.</b> Chaque épreuve rapporte des points à l'équipe. Barème proposé : 5 points pour la 1<sup>re</sup> place, 3 pour la 2<sup>e</sup>, 2 pour la 3<sup>e</sup>, 1 pour les autres.</p>
-      <div class="prize" data-live><span><b>À la fin, un cadeau à gagner</b> pour l'équipe qui a le plus de points :</span><input type="text" id="prize" placeholder="Surprise, encore à définir…" aria-label="Cadeau à gagner"></div>
+      <div class="olymp-title"><span class="medals" aria-hidden="true">🏅</span><div><h2>Les Olympiades du Mas</h2><p>Des défis en équipes pour faire connaissance et cumuler des points, dans une ambiance conviviale !</p></div></div>
+      <div class="rules">
+        <div class="rule"><span class="ico" aria-hidden="true">🏠</span><b>Une équipe par gîte</b><span>On joue avec ceux avec qui on dort.</span></div>
+        <div class="rule"><span class="ico" aria-hidden="true">🥇</span><b>Des points à chaque épreuve</b><span>5 pts au 1<sup>er</sup>, 3 au 2<sup>e</sup>, 2 au 3<sup>e</sup>, 1 aux autres.</span></div>
+        <div class="rule prize" data-live><span class="ico" aria-hidden="true">🎁</span><b>Un cadeau à gagner</b><input type="text" id="prize" placeholder="Surprise, encore à définir…" aria-label="Cadeau à gagner"></div>
+      </div>
     </div>
-    <div class="grid2" id="ideas" data-live></div>
+    <div class="sec-head"><h3>Les équipes</h3><span class="note">Thème : les dieux de l'Olympe. Chaque équipe peut garder son dieu ou se rebaptiser.</span></div>
+    <div class="teams" id="teams" data-live></div>
+    <div class="sec-head"><h3>Les épreuves</h3></div>
+    <div class="ideas" id="ideas" data-live></div>
     <div class="card form">
       <h3>Proposer une épreuve</h3>
       <input type="text" id="ideaTitle" placeholder="Nom de l'épreuve (ex. relais bouée dans la piscine)">
-      <textarea id="ideaDesc" rows="3" placeholder="Règles, matériel, nombre d'équipes…"></textarea>
+      <textarea id="ideaDesc" rows="3" placeholder="Le principe en deux ou trois phrases"></textarea>
+      <textarea id="ideaMat" rows="2" placeholder="Matériel à prévoir, un élément par ligne"></textarea>
       <div class="bar"><input type="text" id="ideaAuthor" placeholder="Proposé par" class="grow"><button class="btn" id="addIdea">Ajouter l'idée</button></div>
     </div>
   </section>
@@ -292,6 +325,9 @@ const STAYS={
 const STATUS={invite:'Invité',confirme:'Confirmé',peutetre:'Peut-être',decline:'Ne vient pas'};
 const DAYS={'':'—',ven:'Vendredi',sam:'Samedi',dim:'Dimanche'};
 const ORGAS={guilhem:'Guilhem',amandine:'Amandine'};
+// Équipes des olympiades : une par gîte, thème dieux de l'Olympe (renommables, stockés dans settings/olympiades.teams).
+const TEAMS={c1:{ico:'⚡',name:'Team Zeus'},c2:{ico:'☀️',name:'Team Apollon'},th:{ico:'🔱',name:'Team Poséidon'},pp:{ico:'🍇',name:'Team Dionysos'},su:{ico:'💘',name:'Team Aphrodite'}};
+const matItems=i=>String(i.materiel||'').split('\n').map(x=>x.trim()).filter(Boolean);
 
 let db=null, guests=[], expenses=[], todos=[], ideas=[], prices={deuxNuits:80,uneNuit:50,soiree:0}, pricesSeen=false;
 let filter='tous', dirty=false, olymp={}, editingIdea=null;
@@ -512,7 +548,17 @@ $('#addExp').onclick=()=>{const l=$('#newExpLabel').value.trim(),a=Number($('#ne
 document.querySelectorAll('.priceset input').forEach(el=>el.addEventListener('change',()=>{if(!db)return;const p={...prices,[el.dataset.k]:Number(el.value)||0};save(db.doc('settings/prix').set(p))}));
 
 /* ---------- todos ---------- */
+/* Matériel des olympiades : agrégé depuis les épreuves, coché dans ideas/{id}.matOk */
+function renderMatos(){
+  const list=sortedIdeas().filter(i=>matItems(i).length);
+  const all=list.flatMap(i=>matItems(i).map(m=>!!(i.matOk||{})[m]));
+  $('#matos').innerHTML=`<div class="head"><h3>Matériel des Olympiades</h3><span class="pill ${all.length&&all.every(Boolean)?'p-ok':'p-mute'}">${all.filter(Boolean).length} / ${all.length} prêt${all.length>1?'s':''}</span></div>
+    ${list.length?list.map(i=>`<div class="matos-g" data-id="${i.id}"><div class="note"><b>${esc(i.icon||'🏅')} ${esc(i.title)}</b>${i.unsure?' · pas sûr':''}</div>
+      ${matItems(i).map((m,k)=>{const ok=!!(i.matOk||{})[m];return `<label class="${ok?'ok':''}"><input type="checkbox" id="mt-${i.id}-${k}" data-item="${esc(m)}" ${ok?'checked':''}><span>${esc(m)}</span></label>`}).join('')}</div>`).join(''):`<span class="note">Le matériel indiqué dans les épreuves s'affichera ici.</span>`}`;
+}
+$('#matos').addEventListener('change',e=>{const g=e.target.closest('[data-id]'),m=e.target.dataset.item;if(!g||m===undefined||!db)return;const i=ideas.find(x=>x.id===g.dataset.id);save(db.doc('ideas/'+g.dataset.id).update({matOk:{...(i&&i.matOk||{}),[m]:e.target.checked}}))});
 function renderTodos(){
+  renderMatos();
   const box=$('#todos');box.setAttribute('data-live','');
   if(!todos.length){box.innerHTML=`<div class="empty" style="border:0">Rien à faire pour l'instant. Ajoute une tâche au-dessus.</div>`;return}
   const list=[...todos].sort((a,b)=>(a.done-b.done)||((a.createdAt||0)-(b.createdAt||0)));
@@ -530,23 +576,31 @@ const sortedIdeas=()=>[...ideas].sort((a,b)=>(a.order??1e12)-(b.order??1e12)||(a
 function renderIdeas(){
   const box=$('#ideas'),pz=$('#prize');
   if(document.activeElement!==pz)pz.value=olymp.cadeau||'';
+  const names=olymp.teams||{};
+  $('#teams').innerHTML=GITES.map(gi=>{
+    const tm=TEAMS[gi.id],who=sorted().filter(g=>comes(g)&&g.room&&g.room.startsWith(gi.id+'-'));
+    return `<div class="team" data-team="${gi.id}"><span class="ico" aria-hidden="true">${tm.ico}</span>
+      <input type="text" id="tm-${gi.id}" value="${esc(names[gi.id]||'')}" placeholder="${esc(tm.name)}" aria-label="Nom de l'équipe du ${esc(gi.name)}">
+      <span class="gite">${esc(gi.name)} · ${who.length} joueur${who.length>1?'s':''}</span>
+      <div class="occ">${who.map(g=>`<span title="${esc(g.name)}">${av(g,'s')}</span>`).join('')||'<span class="note">Personne de placé pour l\'instant</span>'}</div></div>`}).join('');
   if(!ideas.length){box.innerHTML=`<div class="empty">Pas encore d'épreuve. Note la première idée juste en dessous.</div>`;return}
   // Garde la saisie en cours si une mise à jour distante arrive pendant l'édition.
   const ed=box.querySelector(`.form[data-id="${editingIdea}"]`),draft={};
   if(ed)ed.querySelectorAll('[data-k]').forEach(el=>draft[el.dataset.k]=el.type==='checkbox'?el.checked:el.value);
   box.innerHTML=sortedIdeas().map((i,n)=>i.id===editingIdea?(i={...i,...draft},`<div class="card idea form" data-id="${i.id}">
-      <input type="text" data-k="title" id="it-${i.id}" value="${esc(i.title)}" aria-label="Nom de l'épreuve">
-      <textarea data-k="desc" id="id-${i.id}" rows="5" aria-label="Description">${esc(i.desc)}</textarea>
-      <textarea data-k="materiel" id="im-${i.id}" rows="2" placeholder="Matériel" aria-label="Matériel">${esc(i.materiel)}</textarea>
+      <div class="bar"><input type="text" data-k="icon" id="ii-${i.id}" value="${esc(i.icon)}" placeholder="🙂" style="width:56px;text-align:center" aria-label="Emoji"><input type="text" data-k="title" id="it-${i.id}" value="${esc(i.title)}" class="grow" aria-label="Nom de l'épreuve"></div>
+      <textarea data-k="desc" id="id-${i.id}" rows="4" aria-label="Description">${esc(i.desc)}</textarea>
+      <textarea data-k="materiel" id="im-${i.id}" rows="3" placeholder="Matériel, un élément par ligne" aria-label="Matériel, un élément par ligne">${esc(i.materiel)}</textarea>
       <div class="bar"><input type="text" data-k="author" id="ia-${i.id}" value="${esc(i.author)}" placeholder="Proposé par" class="grow" aria-label="Proposé par">
         <label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-k="unsure" ${i.unsure?'checked':''}> Pas sûr</label></div>
       <div class="bar"><button class="btn small" data-idea-save>Enregistrer</button><button class="btn ghost small" data-idea-cancel>Annuler</button></div>
     </div>`):`<div class="card idea${i.unsure?' unsure':''}" data-id="${i.id}">
-      <div class="head"><h3><span class="n">${n+1}.</span>${esc(i.title)}</h3>${i.unsure?'<span class="pill p-mute">Pas sûr</span>':''}</div>
+      <div class="ihead"><span class="ico" aria-hidden="true">${esc(i.icon||'🏅')}</span><div class="t"><span class="eyebrow">Épreuve ${n+1}</span><h3>${esc(i.title)}</h3></div>${i.unsure?'<span class="pill p-mute">Pas sûr</span>':''}</div>
       ${i.desc?`<p>${esc(i.desc)}</p>`:''}
-      ${i.materiel?`<div class="mat"><b>Matériel :</b> ${esc(i.materiel)}</div>`:''}
+      ${matItems(i).length?`<div class="mat"><span class="eyebrow">À prévoir</span>${matItems(i).map(m=>`<span class="it">${esc(m)}</span>`).join('')}</div>`:''}
       <div class="meta"><span>${i.author?'Proposé par '+esc(i.author):''}</span><span class="acts"><button class="x" data-idea-edit>Modifier</button><button class="x" data-del="ideas" aria-label="Supprimer">Suppr.</button></span></div></div>`).join('');
 }
+$('#teams').addEventListener('change',e=>{const t=e.target.closest('[data-team]');if(t&&db)save(db.doc('settings/olympiades').set({...olymp,teams:{...(olymp.teams||{}),[t.dataset.team]:e.target.value.trim()}}))});
 $('#ideas').addEventListener('click',e=>{
   const card=e.target.closest('[data-id]');if(!card)return;
   if(e.target.closest('[data-idea-edit]')){editingIdea=card.dataset.id;renderIdeas();card.ownerDocument.getElementById('it-'+editingIdea)?.focus();return}
@@ -554,12 +608,12 @@ $('#ideas').addEventListener('click',e=>{
   if(e.target.closest('[data-idea-save]')&&db){
     const v=k=>card.querySelector(`[data-k="${k}"]`);
     const title=v('title').value.trim();if(!title){toast("Il faut un nom d'épreuve.");return}
-    save(db.doc('ideas/'+card.dataset.id).update({title,desc:v('desc').value.trim(),materiel:v('materiel').value.trim(),author:v('author').value.trim(),unsure:v('unsure').checked}));
+    save(db.doc('ideas/'+card.dataset.id).update({title,icon:v('icon').value.trim(),desc:v('desc').value.trim(),materiel:v('materiel').value.trim(),author:v('author').value.trim(),unsure:v('unsure').checked}));
     editingIdea=null;renderIdeas();
   }
 });
 $('#prize').addEventListener('change',e=>{if(db)save(db.doc('settings/olympiades').set({...olymp,cadeau:e.target.value.trim()}))});
-$('#addIdea').onclick=()=>{const title=$('#ideaTitle').value.trim();if(!title||!db)return;const desc=$('#ideaDesc').value.trim(),author=$('#ideaAuthor').value.trim();$('#ideaTitle').value='';$('#ideaDesc').value='';const order=ideas.reduce((m,i)=>Math.max(m,Number(i.order)||0),0)+1;save(db.collection('ideas').add({title,desc,author,order,createdAt:Date.now()}))};
+$('#addIdea').onclick=()=>{const title=$('#ideaTitle').value.trim();if(!title||!db)return;const desc=$('#ideaDesc').value.trim(),materiel=$('#ideaMat').value.trim(),author=$('#ideaAuthor').value.trim();$('#ideaTitle').value='';$('#ideaDesc').value='';$('#ideaMat').value='';const order=ideas.reduce((m,i)=>Math.max(m,Number(i.order)||0),0)+1;save(db.collection('ideas').add({title,desc,materiel,author,order,createdAt:Date.now()}))};
 
 /* ---------- data (Firebase) ---------- */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
