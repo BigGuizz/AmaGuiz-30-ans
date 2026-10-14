@@ -113,7 +113,12 @@ td .name{font-weight:600}
 .pos{color:var(--ok)} .neg{color:var(--bad)}
 .priceset{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .priceset label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
-.specgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
+.budget{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:18px;align-items:start}
+.budget-main{display:grid;gap:18px;min-width:0}
+.budget-side{position:sticky;top:64px;max-height:calc(100vh - 80px);overflow-y:auto;border-radius:var(--r)}
+@media (max-width:860px){.budget{grid-template-columns:minmax(0,1fr)}.budget-side{position:static;max-height:none;order:-1}}
+.specgrid{display:grid;gap:14px}
+.spec+.spec{border-top:1px solid var(--line);padding-top:14px}
 .spec{display:grid;gap:8px;min-width:0;align-content:start}
 .spec .row .nm{min-width:0}
 .spec .row .nm>span:last-child{min-width:0;overflow-wrap:anywhere;line-height:1.3}
@@ -187,15 +192,13 @@ td .name{font-weight:600}
   </section>
 
   <section class="panel" id="p-budget" data-panel="budget" hidden>
-    <div class="grid2">
+    <div class="budget">
+     <div class="budget-main">
       <div class="card">
         <div class="head"><h3>Dépenses</h3><span class="note">modifiables</span></div>
         <div class="money" id="expenses"></div>
         <div class="bar"><input type="text" id="newExpLabel" class="grow" placeholder="Nouvelle dépense"><input type="number" id="newExpAmount" placeholder="€" style="width:100px"><button class="btn small" id="addExp">Ajouter</button></div>
       </div>
-      <div class="card" id="balance"></div>
-    </div>
-    <div class="grid2">
       <div class="card">
         <h3>Tarifs annoncés</h3>
         <div class="priceset">
@@ -203,11 +206,13 @@ td .name{font-weight:600}
           <label for="pr1">1 nuit<input type="number" id="pr1" data-k="uneNuit"></label>
           <label for="pr0">Soirée seulement<input type="number" id="pr0" data-k="soiree"></label>
         </div>
-        <p class="note">Le tarif soirée n'est pas encore décidé : il est à 0 € tant que vous ne le fixez pas.</p>
+        <p class="note" style="margin:0">Le tarif soirée n'est pas encore décidé : il est à 0 € tant que vous ne le fixez pas.</p>
       </div>
+      <div class="card" id="specials" data-live></div>
       <div class="card" id="perGuest"></div>
+     </div>
+     <aside class="budget-side"><div class="card" id="balance"></div></aside>
     </div>
-    <div class="card" id="specials" data-live></div>
   </section>
 
   <section class="panel" id="p-todo" data-panel="todo" hidden>
@@ -418,7 +423,7 @@ function renderBudget(){
   const people=guests.filter(counted);
   const nNights=people.reduce((s,g)=>s+nightsOf(g).length,0);
   const solde=t.income-t.dep;
-  const giftRows=Object.entries(ORGAS).filter(([k])=>guests.some(g=>g.specialBy===k)).map(([k,l])=>`<span>Tarifs spéciaux, à la charge ${/^[aeiouy]/i.test(l)?"d'":'de '}${l}</span><span class="v">${eur(t.gifts[k])}</span>`).join('');
+  const giftRows=Object.entries(ORGAS).filter(([k])=>guests.some(g=>g.specialBy===k)).map(([k,l])=>`<span>Tarifs spéciaux de ${l}</span><span class="v">${eur(t.gifts[k])}</span>`).join('');
   $('#balance').innerHTML=`<h3>Équilibre</h3>
     <div><div class="eyebrow">Solde si tout le monde paie</div><div class="big ${solde>=0?'pos':'neg'}">${solde>=0?'+':''}${eur(solde)}</div></div>
     <div class="kv">
@@ -432,6 +437,12 @@ function renderBudget(){
       <span>Personnes au séjour connu</span><span class="v">${people.length}</span>
       <span>Coût réel par personne</span><span class="v">${people.length?eur(t.dep/people.length):'—'}</span>
       <span>Coût du mas par nuit dormie</span><span class="v">${nNights?eur((expenses.find(e=>/mas/i.test(e.label))?.amount||0)/nNights):'—'}</span>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px">
+      <div class="eyebrow">De votre poche</div>
+      <div class="kv">${Object.entries(ORGAS).map(([k,l])=>`<span>${l}</span><span class="v">${eur(t.gifts[k]+Math.max(0,-solde)/2)}</span>
+        <span class="note" style="grid-column:1/-1;margin-top:-4px">${eur(t.gifts[k])} de tarifs spéciaux${solde<0?` + ${eur(-solde/2)} de déficit`:''}</span>`).join('')}</div>
+      ${solde<0?`<span class="note">Le déficit restant est partagé à deux, les tarifs spéciaux restent à la charge de chacun.</span>`:''}
     </div>
     ${t.income>0&&solde<0?`<p class="note">Pour tomber juste avec ces invités, il faudrait monter les tarifs d'environ ${Math.round((t.dep/t.income-1)*100)} % : ${eur(prices.deuxNuits*t.dep/t.income)} les 2 nuits, ${eur(prices.uneNuit*t.dep/t.income)} la nuit.</p>`:''}
     ${!people.length?`<p class="note">Le budget se remplit à mesure que tu renseignes le séjour de chaque invité.</p>`:''}`;

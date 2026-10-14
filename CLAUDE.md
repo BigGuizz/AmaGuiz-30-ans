@@ -77,7 +77,9 @@ La ligne dont le libellé contient « mas » sert au calcul « coût du mas par 
   et l'écart avec le tarif normal (`giftOf`) est **à la charge de l'organisateur qui l'accorde**, pas du budget commun.
   Un tarif spécial passe avant `offert` (l'ajouter décoche `offert`, cocher `offert` retire le tarif spécial).
   Liste des organisateurs : constante `ORGAS`.
-- **Budget** : solde = participations attendues + cadeaux des organisateurs − dépenses. Si le solde est négatif, l'UI propose le % de hausse des tarifs pour tomber juste.
+- **Budget** : solde = participations attendues + cadeaux des organisateurs − dépenses.
+  Mise en page : paramètres à gauche (dépenses, tarifs, tarifs spéciaux, répartition), récap « Équilibre » sticky à droite
+  (en haut et non sticky sous 860 px). « De votre poche » = tarifs spéciaux de chacun + moitié du déficit restant. Si le solde est négatif, l'UI propose le % de hausse des tarifs pour tomber juste.
 - **Saisie** : un champ texte s'enregistre au `change` (en quittant le champ). Tant qu'un input dans un bloc `[data-live]`
   a le focus, `render()` est différé jusqu'au `focusout`, pour ne pas écraser la frappe pendant une mise à jour distante.
 - **Suppression** en deux clics (le bouton s'arme 3 s puis « Confirmer »). Pas de `confirm()`.
