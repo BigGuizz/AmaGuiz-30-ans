@@ -53,6 +53,8 @@ Toute nouvelle collection doit être ajoutée à cette liste, sinon les écritur
 - `room` : id de couchage (`c1-1`, `th-3`…) ou `''`
 - `photo` : data URI JPEG 96×96 en base64 (~4 Ko), optionnel
 - `order` number (tri de la liste), `createdAt` ms
+- `team` : équipe des olympiades choisie à la main, `c1`…`su` (id d'équipe), `'-'` (sans équipe) ou `''`/absent
+  (= l'équipe de son gîte, déduite de `room`). Fonction `teamOf(g)`. Le bouton « Revenir aux équipes par gîte » remet `''` partout.
 - `specialBy` : `''` | `guilhem` | `amandine` (organisateur qui accorde un tarif spécial), `specialPrice` number (€ payés par l'invité).
   Champs optionnels : absents sur les anciens invités, ce qui équivaut à « pas de tarif spécial ».
 
@@ -67,7 +69,7 @@ La ligne dont le libellé contient « mas » sert au calcul « coût du mas par 
 
 **`settings/olympiades`** : `{ cadeau, teams: {c1: 'nom', …} }` : lot de l'équipe gagnante et noms d'équipes choisis.
 Le préambule (équipes par gîte, barème) et les noms par défaut (constante `TEAMS`, dieux de l'Olympe) sont en dur dans `index.html`.
-Les membres d'une équipe = invités placés dans ce gîte (onglet Couchages).
+Membres d'une équipe : par défaut les invités placés dans ce gîte (onglet Couchages), ajustables à la main via `guests.team`. Les invités qui ne dorment pas sur place arrivent dans « Sans équipe ».
 
 **`settings/prix`** : `{ deuxNuits, uneNuit, soiree }` en €. Valeurs par défaut dans le code : 80 / 50 / 0.
 

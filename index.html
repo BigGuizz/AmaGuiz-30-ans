@@ -165,6 +165,19 @@ td .name{font-weight:600}
 .team input:hover,.team input:focus{border-color:var(--line);background:var(--bg)}
 .team .gite{font-size:12px;color:var(--muted)}
 .team .occ{justify-content:center}
+.members{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;min-height:30px;align-items:center}
+.members.left{justify-content:flex-start}
+.team{min-width:0;grid-template-columns:minmax(0,1fr)}
+.team .members{width:100%}
+.mb{min-width:0}
+.mb{display:inline-flex;align-items:center;gap:4px;max-width:100%;background:var(--sun-soft);border-radius:999px;padding:2px 2px 2px 3px;font-size:13px;font-weight:500}
+.mb>span:not(.av){white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mb.solo{padding-right:10px;background:var(--sunk)}
+.mb button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;min-width:26px;min-height:26px;border-radius:999px}
+.mb button:hover{color:var(--bad);background:var(--bad-soft)}
+.team select{width:100%;font-size:14px;border-style:dashed;color:var(--muted);margin-top:2px}
+.pool{gap:10px}
+.btn.armed{background:var(--bad-soft);color:var(--bad);border-color:transparent}
 .matos-g{display:grid;gap:4px;padding:10px 0;border-top:1px solid var(--line)}
 .matos-g label{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
 .matos-g label.ok span{text-decoration:line-through;color:var(--muted)}
@@ -281,6 +294,9 @@ td .name{font-weight:600}
   .tog{justify-content:center;padding:0 8px}
   .team{padding:12px 8px}
   .team .ico{font-size:28px}
+  .team select{min-height:40px;font-size:15px}
+  .mb{font-size:13.5px;min-height:32px}
+  .mb button{min-width:32px;min-height:32px;font-size:17px}
   .idea{padding:16px}
   .ihead .ico{width:44px;height:44px;font-size:24px;border-radius:12px}
   .matos-g label{min-height:40px}
@@ -381,13 +397,14 @@ td .name{font-weight:600}
     <div class="card olymp-intro">
       <div class="olymp-title"><span class="medals" aria-hidden="true">🏅</span><div><h2>Les Olympiades du Mas</h2><p>Des défis en équipes pour faire connaissance et cumuler des points, dans une ambiance conviviale !</p></div></div>
       <div class="rules">
-        <div class="rule"><span class="ico" aria-hidden="true">🏠</span><b>Une équipe par gîte</b><span>On joue avec ceux avec qui on dort.</span></div>
+        <div class="rule"><span class="ico" aria-hidden="true">🏠</span><b>Des équipes sur mesure</b><span>Au départ, on joue avec son gîte. Ajustez ensuite qui va où.</span></div>
         <div class="rule"><span class="ico" aria-hidden="true">🥇</span><b>Des points à chaque épreuve</b><span>5 pts au 1<sup>er</sup>, 3 au 2<sup>e</sup>, 2 au 3<sup>e</sup>, 1 aux autres.</span></div>
         <div class="rule prize" data-live><span class="ico" aria-hidden="true">🎁</span><b>Un cadeau à gagner</b><input type="text" id="prize" placeholder="Surprise, encore à définir…" aria-label="Cadeau à gagner"></div>
       </div>
     </div>
-    <div class="sec-head"><h3>Les équipes</h3><span class="note">Thème : les dieux de l'Olympe. Chaque équipe peut garder son dieu ou se rebaptiser.</span></div>
+    <div class="sec-head"><h3>Les équipes</h3><span class="note">Thème : les dieux de l'Olympe. Touchez un nom pour rebaptiser l'équipe, « + Ajouter » pour y mettre quelqu'un, × pour l'en retirer.</span></div>
     <div class="teams" id="teams" data-live></div>
+    <div class="card pool" id="pool"></div>
     <div class="sec-head"><h3>Les épreuves</h3></div>
     <div class="ideas" id="ideas" data-live></div>
     <div class="card form">
@@ -444,6 +461,9 @@ const DAYS={'':'—',ven:'Vendredi',sam:'Samedi',dim:'Dimanche'};
 const ORGAS={guilhem:'Guilhem',amandine:'Amandine'};
 // Équipes des olympiades : une par gîte, thème dieux de l'Olympe (renommables, stockés dans settings/olympiades.teams).
 const TEAMS={c1:{ico:'⚡',name:'Team Zeus'},c2:{ico:'☀️',name:'Team Apollon'},th:{ico:'🔱',name:'Team Poséidon'},pp:{ico:'🍇',name:'Team Dionysos'},su:{ico:'💘',name:'Team Aphrodite'}};
+// Équipe d'un invité : choix manuel (guests.team = id d'équipe, ou '-' pour « sans équipe »), sinon son gîte.
+const teamOf=g=>{if(!comes(g))return null;if(g.team==='-')return null;if(TEAMS[g.team])return g.team;const r=String(g.room||'').split('-')[0];return TEAMS[r]?r:null};
+const firstName=g=>{const n=String(g.name||'?').trim(),w=n.split(/\s+/)[0];return /^(le|la|les|l'|un|une)$/i.test(w)?n:w};
 const matItems=i=>String(i.materiel||'').split('\n').map(x=>x.trim()).filter(Boolean);
 
 let db=null, guests=[], expenses=[], todos=[], ideas=[], prices={deuxNuits:80,uneNuit:50,soiree:0}, pricesSeen=false;
@@ -739,12 +759,23 @@ function renderIdeas(){
   const box=$('#ideas'),pz=$('#prize');
   if(document.activeElement!==pz)pz.value=olymp.cadeau||'';
   const names=olymp.teams||{};
+  const players=sorted().filter(comes),teamName=id=>names[id]||TEAMS[id].name;
+  const custom=guests.some(g=>g.team);
   $('#teams').innerHTML=GITES.map(gi=>{
-    const tm=TEAMS[gi.id],who=sorted().filter(g=>comes(g)&&g.room&&g.room.startsWith(gi.id+'-'));
+    const tm=TEAMS[gi.id],who=players.filter(g=>teamOf(g)===gi.id),others=players.filter(g=>teamOf(g)!==gi.id);
+    const free=others.filter(g=>!teamOf(g)),moved=others.filter(g=>teamOf(g));
     return `<div class="team" data-team="${gi.id}"><span class="ico" aria-hidden="true">${tm.ico}</span>
-      <input type="text" id="tm-${gi.id}" value="${esc(names[gi.id]||'')}" placeholder="${esc(tm.name)}" aria-label="Nom de l'équipe du ${esc(gi.name)}">
-      <span class="gite">${esc(gi.name)} · ${who.length} joueur${who.length>1?'s':''}</span>
-      <div class="occ">${who.map(g=>`<span title="${esc(g.name)}">${av(g,'s')}</span>`).join('')||'<span class="note">Personne de placé pour l\'instant</span>'}</div></div>`}).join('');
+      <input type="text" id="tm-${gi.id}" value="${esc(names[gi.id]||'')}" placeholder="${esc(tm.name)}" aria-label="Nom de l'équipe ${esc(teamName(gi.id))}">
+      <span class="gite">${who.length} joueur${who.length>1?'s':''} · base ${esc(gi.name.replace('Gîte ',''))}</span>
+      <div class="members">${who.map(g=>`<span class="mb" title="${esc(g.name)}">${av(g,'s')}<span>${esc(firstName(g))}</span><button type="button" data-unteam="${g.id}" aria-label="Retirer ${esc(g.name)} de l'équipe">×</button></span>`).join('')||'<span class="note">Personne pour l\'instant</span>'}</div>
+      <select data-addteam="${gi.id}" id="ta-${gi.id}" aria-label="Ajouter quelqu'un à l'équipe ${esc(teamName(gi.id))}"><option value="">+ Ajouter…</option>
+        ${free.length?`<optgroup label="Sans équipe">${free.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')}</optgroup>`:''}
+        ${moved.length?`<optgroup label="Déplacer depuis une autre équipe">${moved.map(g=>`<option value="${g.id}">${esc(g.name)} · ${esc(teamName(teamOf(g)))}</option>`).join('')}</optgroup>`:''}
+      </select></div>`}).join('');
+  const pool=players.filter(g=>!teamOf(g));
+  $('#pool').innerHTML=`<div class="head"><h3>Sans équipe</h3><span class="pill ${pool.length?'p-warn':'p-ok'}">${pool.length} personne${pool.length>1?'s':''}</span></div>
+    ${pool.length?`<div class="members left">${pool.map(g=>`<span class="mb solo" title="${esc(g.name)}">${av(g,'s')}<span>${esc(g.name)}</span></span>`).join('')}</div>`:'<span class="note">Tout le monde a une équipe.</span>'}
+    ${custom?`<div><button type="button" class="btn ghost small" id="resetTeams">Revenir aux équipes par gîte</button></div>`:''}`;
   if(!ideas.length){box.innerHTML=`<div class="empty">Pas encore d'épreuve. Note la première idée juste en dessous.</div>`;return}
   // Garde la saisie en cours si une mise à jour distante arrive pendant l'édition.
   const ed=box.querySelector(`.form[data-id="${editingIdea}"]`),draft={};
@@ -762,7 +793,19 @@ function renderIdeas(){
       ${matItems(i).length?`<div class="mat"><span class="eyebrow">À prévoir</span>${matItems(i).map(m=>`<span class="it">${esc(m)}</span>`).join('')}</div>`:''}
       <div class="meta"><span>${i.author?'Proposé par '+esc(i.author):''}</span><span class="acts"><button class="x" data-idea-edit>Modifier</button><button class="x" data-del="ideas" aria-label="Supprimer">Suppr.</button></span></div></div>`).join('');
 }
-$('#teams').addEventListener('change',e=>{const t=e.target.closest('[data-team]');if(t&&db)save(db.doc('settings/olympiades').set({...olymp,teams:{...(olymp.teams||{}),[t.dataset.team]:e.target.value.trim()}}))});
+$('#teams').addEventListener('change',e=>{
+  if(!db)return;
+  const add=e.target.dataset.addteam;
+  if(add){if(e.target.value)save(db.doc('guests/'+e.target.value).update({team:add}));return}
+  const t=e.target.closest('[data-team]');if(t)save(db.doc('settings/olympiades').set({...olymp,teams:{...(olymp.teams||{}),[t.dataset.team]:e.target.value.trim()}}));
+});
+$('#teams').addEventListener('click',e=>{const b=e.target.closest('[data-unteam]');if(b&&db)save(db.doc('guests/'+b.dataset.unteam).update({team:'-'}))});
+$('#pool').addEventListener('click',async e=>{
+  const b=e.target.closest('#resetTeams');if(!b||!db)return;
+  if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Confirmer : tout le monde retourne dans son gîte';setTimeout(()=>{if(b.isConnected){b.classList.remove('armed');b.textContent='Revenir aux équipes par gîte'}},3000);return}
+  for(const g of guests.filter(g=>g.team))await save(db.doc('guests/'+g.id).update({team:''}));
+  toast('Équipes remises par gîte.');
+});
 $('#ideas').addEventListener('click',e=>{
   const card=e.target.closest('[data-id]');if(!card)return;
   if(e.target.closest('[data-idea-edit]')){editingIdea=card.dataset.id;renderIdeas();card.ownerDocument.getElementById('it-'+editingIdea)?.focus();return}
