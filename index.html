@@ -461,7 +461,7 @@ const STATUS={invite:'Invité',confirme:'Confirmé',peutetre:'Peut-être',declin
 const DAYS={'':'—',ven:'Vendredi',sam:'Samedi',dim:'Dimanche'};
 const ORGAS={guilhem:'Guilhem',amandine:'Amandine'};
 // Équipes des olympiades : une par gîte, thème pop culture (renommables, stockés dans settings/olympiades.teams).
-const TEAMS={c1:{ico:'🛡️',name:'Avengers'},c2:{ico:'🧬',name:'X-Men'},th:{ico:'🦇',name:'Justice League'},pp:{ico:'🚀',name:'Guardians'},su:{ico:'👻',name:'Ghostbusters'}};
+const TEAMS={c1:{ico:'🚀',name:'Team Rocket'},c2:{ico:'🐶',name:'Le Scooby Gang'},th:{ico:'🕶️',name:'Men in Black'},pp:{ico:'🛡️',name:'Avengers'},su:{ico:'🧬',name:'X-Men'}};
 // Équipe d'un invité : choix manuel (guests.team = id d'équipe, ou '-' pour « sans équipe »), sinon son gîte.
 const teamOf=g=>{if(!comes(g))return null;if(g.team==='-')return null;if(TEAMS[g.team])return g.team;const r=String(g.room||'').split('-')[0];return TEAMS[r]?r:null};
 // Nom d'équipe : la police rétrécit pour qu'un nom long tienne dans la carte.

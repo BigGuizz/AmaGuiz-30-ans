@@ -68,7 +68,7 @@ La ligne dont le libellé contient « mas » sert au calcul « coût du mas par 
 (coché dans la liste « Matériel des Olympiades » de l'onglet To-do). Modifiables depuis l'UI (bouton Modifier).
 
 **`settings/olympiades`** : `{ cadeau, teams: {c1: 'nom', …} }` : lot de l'équipe gagnante et noms d'équipes choisis.
-Le préambule (équipes par gîte, barème) et les noms par défaut (constante `TEAMS`, pop culture : Avengers, X-Men, Justice League, Guardians, Ghostbusters) sont en dur dans `index.html`.
+Le préambule (équipes par gîte, barème) et les noms par défaut (constante `TEAMS`, pop culture : Team Rocket, Le Scooby Gang, Men in Black, Avengers, X-Men) sont en dur dans `index.html`.
 Membres d'une équipe : par défaut les invités placés dans ce gîte (onglet Couchages), ajustables à la main via `guests.team`. Les invités qui ne dorment pas sur place arrivent dans « Sans équipe ».
 
 **`settings/prix`** : `{ deuxNuits, uneNuit, soiree }` en €. Valeurs par défaut dans le code : 80 / 50 / 0.
