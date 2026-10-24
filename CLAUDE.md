@@ -61,7 +61,7 @@ Toute nouvelle collection doit être ajoutée à cette liste, sinon les écritur
 **`expenses/{id}`** : `label`, `amount` (€), `createdAt`.
 La ligne dont le libellé contient « mas » sert au calcul « coût du mas par nuit dormie ».
 
-**`todos/{id}`** : `text`, `who`, `done`, `createdAt`
+**`todos/{id}`** : `text`, `who`, `done`, `createdAt`. `who` modifiable après création : pastille « + Qui ? » ou nom dans la ligne, champ inline (Entrée ou sortie du champ = enregistre, Échap = annule), suggestions via `<datalist id="todoWhoList">` (Guilhem, Amandine + noms déjà utilisés).
 
 **`ideas/{id}`** : épreuves d'olympiades, `title`, `desc`, `author`, `createdAt`, et optionnels `order` (numéro d'affichage),
 `materiel` string (un élément par ligne), `icon` emoji, `unsure` bool (« pas sûr »), `matOk` map `{élément: bool}`

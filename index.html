@@ -124,12 +124,15 @@ td .name{font-weight:600}
 .spec{display:grid;gap:8px;min-width:0;align-content:start}
 .spec .row .nm{min-width:0}
 .spec .row .nm>span:last-child{min-width:0;overflow-wrap:anywhere;line-height:1.3}
-.todo{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px;align-items:center;padding:4px 6px 4px 4px;border-bottom:1px solid var(--line)}
+.todo{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:4px;align-items:center;padding:4px 6px 4px 4px;border-bottom:1px solid var(--line)}
 .todo:last-child{border-bottom:0}
 .todo .ck{display:grid;place-items:center;min-width:40px;min-height:40px;cursor:pointer}
 .todo .tx{display:grid;gap:1px;min-width:0;padding:6px 0;cursor:pointer;overflow-wrap:anywhere}
 .todo.done .t{text-decoration:line-through;color:var(--muted)}
-.todo .who{font-size:12.5px;color:var(--muted)}
+.todo .who{font:inherit;font-size:12.5px;color:var(--muted);background:var(--sunk);border:1px dashed var(--line);border-radius:999px;padding:0 12px;min-height:32px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.todo .who.set{border-style:solid;color:var(--ink)}
+.todo .who-in{font-size:16px;width:130px;min-height:36px}
+@media (max-width:480px){.todo .who{max-width:96px;padding:0 9px}.todo .who-in{width:104px}}
 .list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .idea{border-top:4px solid var(--sun);padding:18px 20px;gap:12px}
 .idea.unsure{border-top-color:var(--line)}
@@ -387,7 +390,8 @@ td .name{font-weight:600}
   <section class="panel" id="p-todo" data-panel="todo" hidden>
     <div class="bar add">
       <input type="text" id="newTodo" class="grow" placeholder="Une chose à faire…">
-      <input type="text" id="newTodoWho" placeholder="Qui ?" style="width:130px">
+      <input type="text" id="newTodoWho" placeholder="Qui ?" style="width:130px" list="todoWhoList" autocomplete="off">
+      <datalist id="todoWhoList"></datalist>
       <button class="btn" id="addTodo">Ajouter</button>
     </div>
     <div class="list" id="todos"></div>
@@ -470,7 +474,7 @@ const firstName=g=>{const n=String(g.name||'?').trim(),w=n.split(/\s+/)[0];retur
 const matItems=i=>String(i.materiel||'').split('\n').map(x=>x.trim()).filter(Boolean);
 
 let db=null, guests=[], expenses=[], todos=[], ideas=[], prices={deuxNuits:80,uneNuit:50,soiree:0}, pricesSeen=false;
-let filter='tous', dirty=false, olymp={}, editingIdea=null;
+let filter='tous', dirty=false, olymp={}, editingIdea=null, editingWho=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eur=n=>(Math.round(n)).toLocaleString('fr-FR')+' €';
@@ -741,18 +745,39 @@ function renderMatos(){
       ${matItems(i).map((m,k)=>{const ok=!!(i.matOk||{})[m];return `<label class="${ok?'ok':''}"><input type="checkbox" id="mt-${i.id}-${k}" data-item="${esc(m)}" ${ok?'checked':''}><span>${esc(m)}</span></label>`}).join('')}</div>`).join(''):`<span class="note">Le matériel indiqué dans les épreuves s'affichera ici.</span>`}`;
 }
 $('#matos').addEventListener('change',e=>{const g=e.target.closest('[data-id]'),m=e.target.dataset.item;if(!g||m===undefined||!db)return;const i=ideas.find(x=>x.id===g.dataset.id);save(db.doc('ideas/'+g.dataset.id).update({matOk:{...(i&&i.matOk||{}),[m]:e.target.checked}}))});
+let whoDraft=null;
+function renderWhoList(){
+  const names=[...new Set(['Guilhem','Amandine',...todos.map(t=>(t.who||'').trim()).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,'fr'));
+  $('#todoWhoList').innerHTML=names.map(n=>`<option value="${esc(n)}">`).join('');
+}
 function renderTodos(){
-  renderMatos();
+  renderMatos();renderWhoList();
+  const cur=document.getElementById('tw-'+editingWho);if(cur)whoDraft=cur.value;const hadFocus=!!cur&&document.activeElement===cur;
+  if(editingWho&&!todos.some(t=>t.id===editingWho)){editingWho=null;whoDraft=null}
   const left=todos.filter(t=>!t.done).length,bd=$('#todoBadge');bd.textContent=left;bd.hidden=!left;
   const box=$('#todos');box.setAttribute('data-live','');
   if(!todos.length){box.innerHTML=`<div class="empty" style="border:0">Rien à faire pour l'instant. Ajoute une tâche au-dessus.</div>`;return}
   const list=[...todos].sort((a,b)=>(a.done-b.done)||((a.createdAt||0)-(b.createdAt||0)));
   box.innerHTML=list.map(t=>`<div class="todo${t.done?' done':''}" data-id="${t.id}">
     <label class="ck" for="td-${t.id}"><input type="checkbox" data-f="done" id="td-${t.id}" ${t.done?'checked':''} aria-label="Fait : ${esc(t.text)}"></label>
-    <label class="tx" for="td-${t.id}"><span class="t">${esc(t.text)}</span>${t.who?`<span class="who">${esc(t.who)}</span>`:''}</label>
+    <label class="tx" for="td-${t.id}"><span class="t">${esc(t.text)}</span></label>
+    ${t.id===editingWho?`<input type="text" class="who-in" id="tw-${t.id}" list="todoWhoList" autocomplete="off" placeholder="Qui ?" value="${esc(whoDraft??t.who??'')}" aria-label="Attribuer : ${esc(t.text)}">`
+      :`<button class="who${t.who?' set':''}" data-who aria-label="${t.who?`Attribuée à ${esc(t.who)}, modifier`:'Attribuer la tâche'}">${t.who?esc(t.who):'+ Qui ?'}</button>`}
     <button class="x" data-del="todos" aria-label="Supprimer la tâche">×</button></div>`).join('');
+  if(hadFocus)focusWho();
 }
-$('#todos').addEventListener('change',e=>{const row=e.target.closest('[data-id]');if(row&&db)save(db.doc('todos/'+row.dataset.id).update({done:e.target.checked}))});
+$('#todos').addEventListener('change',e=>{if(e.target.classList.contains('who-in'))return;const row=e.target.closest('[data-id]');if(row&&db)save(db.doc('todos/'+row.dataset.id).update({done:e.target.checked}))});
+function focusWho(){const el=document.getElementById('tw-'+editingWho);if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}}
+$('#todos').addEventListener('click',e=>{const b=e.target.closest('[data-who]');if(!b)return;const row=b.closest('[data-id]');editingWho=row.dataset.id;whoDraft=null;renderTodos();focusWho()});
+function commitWho(cancel){
+  const id=editingWho;if(!id)return;const el=document.getElementById('tw-'+id);const v=el?el.value.trim():'';
+  editingWho=null;whoDraft=null;
+  const t=todos.find(x=>x.id===id);
+  if(!cancel&&db&&t&&(t.who||'')!==v)save(db.doc('todos/'+id).update({who:v}));
+  renderTodos();
+}
+$('#todos').addEventListener('keydown',e=>{if(!e.target.classList.contains('who-in'))return;if(e.key==='Enter'){e.preventDefault();commitWho(false)}else if(e.key==='Escape'){commitWho(true)}});
+$('#todos').addEventListener('focusout',e=>{if(e.target.classList.contains('who-in')&&e.target.id==='tw-'+editingWho)setTimeout(()=>{const el=document.getElementById('tw-'+editingWho);if(editingWho&&document.activeElement!==el)commitWho(false)},0)});
 function addTodo(){const t=$('#newTodo').value.trim();if(!t||!db)return;const who=$('#newTodoWho').value.trim();$('#newTodo').value='';save(db.collection('todos').add({text:t,who,done:false,createdAt:Date.now()}))}
 $('#addTodo').onclick=addTodo;$('#newTodo').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo()});
 
