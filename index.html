@@ -403,7 +403,7 @@ td .name{font-weight:600}
         <div class="rule prize" data-live><span class="ico" aria-hidden="true">🎁</span><b>Un cadeau à gagner</b><input type="text" id="prize" placeholder="Surprise, encore à définir…" aria-label="Cadeau à gagner"></div>
       </div>
     </div>
-    <div class="sec-head"><h3>Les équipes</h3><span class="note">Thème : les dieux de l'Olympe. Touchez un nom pour rebaptiser l'équipe, « + Ajouter » pour y mettre quelqu'un, × pour l'en retirer.</span></div>
+    <div class="sec-head"><h3>Les équipes</h3><span class="note">Thème : les équipes de la pop culture. Touchez un nom pour rebaptiser l'équipe, « + Ajouter » pour y mettre quelqu'un, × pour l'en retirer.</span></div>
     <div class="teams" id="teams" data-live></div>
     <div class="card pool" id="pool"></div>
     <div class="sec-head"><h3>Les épreuves</h3></div>
@@ -460,10 +460,12 @@ const STAYS={
 const STATUS={invite:'Invité',confirme:'Confirmé',peutetre:'Peut-être',decline:'Ne vient pas'};
 const DAYS={'':'—',ven:'Vendredi',sam:'Samedi',dim:'Dimanche'};
 const ORGAS={guilhem:'Guilhem',amandine:'Amandine'};
-// Équipes des olympiades : une par gîte, thème dieux de l'Olympe (renommables, stockés dans settings/olympiades.teams).
-const TEAMS={c1:{ico:'⚡',name:'Team Zeus'},c2:{ico:'☀️',name:'Team Apollon'},th:{ico:'🔱',name:'Team Poséidon'},pp:{ico:'🍇',name:'Team Dionysos'},su:{ico:'💘',name:'Team Aphrodite'}};
+// Équipes des olympiades : une par gîte, thème pop culture (renommables, stockés dans settings/olympiades.teams).
+const TEAMS={c1:{ico:'🛡️',name:'Avengers'},c2:{ico:'🧬',name:'X-Men'},th:{ico:'🦇',name:'Justice League'},pp:{ico:'🚀',name:'Guardians'},su:{ico:'👻',name:'Ghostbusters'}};
 // Équipe d'un invité : choix manuel (guests.team = id d'équipe, ou '-' pour « sans équipe »), sinon son gîte.
 const teamOf=g=>{if(!comes(g))return null;if(g.team==='-')return null;if(TEAMS[g.team])return g.team;const r=String(g.room||'').split('-')[0];return TEAMS[r]?r:null};
+// Nom d'équipe : la police rétrécit pour qu'un nom long tienne dans la carte.
+const nameSize=n=>{const l=String(n).length;return l>18?12:l>14?13.5:l>11?15:16};
 const firstName=g=>{const n=String(g.name||'?').trim(),w=n.split(/\s+/)[0];return /^(le|la|les|l'|un|une)$/i.test(w)?n:w};
 const matItems=i=>String(i.materiel||'').split('\n').map(x=>x.trim()).filter(Boolean);
 
@@ -766,7 +768,7 @@ function renderIdeas(){
     const tm=TEAMS[gi.id],who=players.filter(g=>teamOf(g)===gi.id),others=players.filter(g=>teamOf(g)!==gi.id);
     const free=others.filter(g=>!teamOf(g)),moved=others.filter(g=>teamOf(g));
     return `<div class="team" data-team="${gi.id}"><span class="ico" aria-hidden="true">${tm.ico}</span>
-      <input type="text" id="tm-${gi.id}" value="${esc(names[gi.id]||'')}" placeholder="${esc(tm.name)}" aria-label="Nom de l'équipe ${esc(teamName(gi.id))}">
+      <input type="text" id="tm-${gi.id}" value="${esc(names[gi.id]||'')}" placeholder="${esc(tm.name)}" style="font-size:${nameSize(names[gi.id]||tm.name)}px" aria-label="Nom de l'équipe ${esc(teamName(gi.id))}">
       <span class="gite">${who.length} joueur${who.length>1?'s':''} · base ${esc(gi.name.replace('Gîte ',''))}</span>
       <div class="members">${who.map(g=>`<span class="mb" title="${esc(g.name)}">${av(g,'s')}<span>${esc(firstName(g))}</span><button type="button" data-unteam="${g.id}" aria-label="Retirer ${esc(g.name)} de l'équipe">×</button></span>`).join('')||'<span class="note">Personne pour l\'instant</span>'}</div>
       <select data-addteam="${gi.id}" id="ta-${gi.id}" aria-label="Ajouter quelqu'un à l'équipe ${esc(teamName(gi.id))}"><option value="">+ Ajouter…</option>
@@ -800,6 +802,7 @@ $('#teams').addEventListener('change',e=>{
   if(add){if(e.target.value)save(db.doc('guests/'+e.target.value).update({team:add}));return}
   const t=e.target.closest('[data-team]');if(t)save(db.doc('settings/olympiades').set({...olymp,teams:{...(olymp.teams||{}),[t.dataset.team]:e.target.value.trim()}}));
 });
+$('#teams').addEventListener('input',e=>{const t=e.target.closest('[data-team]');if(t&&e.target.matches('input[type=text]'))e.target.style.fontSize=nameSize(e.target.value||e.target.placeholder)+'px'});
 $('#teams').addEventListener('click',e=>{const b=e.target.closest('[data-unteam]');if(b&&db)save(db.doc('guests/'+b.dataset.unteam).update({team:'-'}))});
 $('#pool').addEventListener('click',async e=>{
   const b=e.target.closest('#resetTeams');if(!b||!db)return;
