@@ -55,6 +55,8 @@ Toute nouvelle collection doit être ajoutée à cette liste, sinon les écritur
 - `order` number (tri de la liste), `createdAt` ms
 - `team` : équipe des olympiades choisie à la main, `c1`…`su` (id d'équipe), `'-'` (sans équipe) ou `''`/absent
   (= l'équipe de son gîte, déduite de `room`). Fonction `teamOf(g)`. Le bouton « Revenir aux équipes par gîte » remet `''` partout.
+- `satLunch`, `activity` : `'oui'` | `'non'` | `''`/absent (pas encore répondu) : repas du samedi midi et activité de l'après-midi.
+  Récap en haut de l'onglet Invités (oui / non / à relancer, sur les invités qui viennent), filtres « Midi sans réponse » et « Aprèm sans réponse ».
 - `specialBy` : `''` | `guilhem` | `amandine` (organisateur qui accorde un tarif spécial), `specialPrice` number (€ payés par l'invité).
   Champs optionnels : absents sur les anciens invités, ce qui équivaut à « pas de tarif spécial ».
 
@@ -70,6 +72,9 @@ La ligne dont le libellé contient « mas » sert au calcul « coût du mas par 
 **`settings/olympiades`** : `{ cadeau, teams: {c1: 'nom', …} }` : lot de l'équipe gagnante et noms d'équipes choisis.
 Le préambule (équipes par gîte, barème) et les noms par défaut (constante `TEAMS`, pop culture : Team Rocket, Le Scooby Gang, Men in Black, Avengers, Ghostbusters) sont en dur dans `index.html`.
 Membres d'une équipe : par défaut les invités placés dans ce gîte (onglet Couchages), ajustables à la main via `guests.team`. Les invités qui ne dorment pas sur place arrivent dans « Sans équipe ».
+
+**`settings/samedi`** : `{ satLunch: {n, at}, activity: {n, at} }` : nombre validé pour la réservation (bouton « Valider N pour réserver ») et date en ms.
+Si le nombre de « oui » change ensuite, le récap l'affiche et propose « Revalider ».
 
 **`settings/prix`** : `{ deuxNuits, uneNuit, soiree }` en €. Valeurs par défaut dans le code : 80 / 50 / 0.
 

@@ -72,7 +72,10 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:po
 .pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 8px;white-space:nowrap}
 .p-ok{background:var(--ok-soft);color:var(--ok)} .p-warn{background:var(--warn-soft);color:var(--warn)} .p-bad{background:var(--bad-soft);color:var(--bad)} .p-mute{background:var(--sunk);color:var(--muted)} .p-sun{background:var(--sun-soft);color:var(--ink)}
 .tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
-table{border-collapse:collapse;width:100%;min-width:1020px}
+table{border-collapse:collapse;width:100%;min-width:1420px}
+td .nm input{min-width:150px}
+td input[data-f=note]{min-width:170px}
+td .seg span{min-width:30px;padding:0 6px}
 th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:600;padding:10px 8px;border-bottom:1px solid var(--line);background:var(--sunk);white-space:nowrap}
 td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
 tr:last-child td{border-bottom:0}
@@ -231,6 +234,30 @@ td .name{font-weight:600}
 .gfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .x.del{color:var(--bad)}
 
+/* ---------- Samedi : midi et activité ---------- */
+.sat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.satq{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:8px;align-content:start;min-width:0}
+.sath{display:flex;align-items:center;gap:8px}
+.satico{font-size:18px;line-height:1}
+.satn{display:flex;align-items:baseline;gap:6px}
+.satn b{font-family:var(--f-display);font-size:30px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.satn span{color:var(--muted);font-weight:500}
+.satsub{display:flex;flex-wrap:wrap;gap:6px}
+.satrel{border:0;cursor:pointer;font:600 12px var(--f-body)}
+.satrel[aria-pressed="true"]{outline:2px solid var(--warn);outline-offset:1px}
+.satval{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px}
+.satval.ok{color:var(--ok)} .satval.warn{color:var(--warn)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--sunk);gap:2px}
+.seg label{position:relative;cursor:pointer}
+.seg input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.seg span{display:grid;place-items:center;min-width:34px;height:26px;padding:0 8px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.seg label:has(input:checked) span{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 18%,transparent)}
+.seg .sg-oui:has(input:checked) span{background:var(--ok-soft);color:var(--ok)}
+.seg .sg-non:has(input:checked) span{background:var(--bad-soft);color:var(--bad)}
+.seg label:has(input:focus-visible) span{outline:2px solid var(--sea);outline-offset:1px}
+.satf{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:600;color:var(--ink);grid-template-columns:minmax(0,1fr) auto;align-items:center}
+
 /* ---------- Téléphone ---------- */
 .stat .sm{display:none}
 @media (max-width:640px){
@@ -268,6 +295,11 @@ td .name{font-weight:600}
   .bar.add>:first-child{grid-column:1/-1}
   .bar.add>*{width:auto!important;min-width:0}
 
+  .sat{gap:8px}
+  .satq{padding:10px 12px;gap:6px}
+  .satn b{font-size:26px}
+  .seg span{min-width:46px;height:36px;font-size:14px}
+  .satval .btn,.satq>.btn{width:100%}
   .chips{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding:2px 16px;scrollbar-width:none;scroll-padding-inline:16px}
   .chips::-webkit-scrollbar{display:none}
   .chip{flex:none;min-height:38px;padding:6px 14px}
@@ -305,7 +337,7 @@ td .name{font-weight:600}
   .matos-g label{min-height:40px}
   .foot{margin-top:28px}
 }
-@media (max-width:380px){.teams{grid-template-columns:minmax(0,1fr)}nav.tabs button{font-size:10.5px}}
+@media (max-width:380px){.teams{grid-template-columns:minmax(0,1fr)}.sat{grid-template-columns:minmax(0,1fr)}nav.tabs button{font-size:10.5px}}
 @media (max-width:360px){.gsum{grid-template-columns:36px minmax(0,1fr) auto;gap:10px}.gsum .chev{display:none}.gsum .av{width:36px;height:36px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -341,6 +373,7 @@ td .name{font-weight:600}
       <input type="text" id="newGuest" class="grow" placeholder="Ajouter un invité…" aria-label="Prénom du nouvel invité">
       <button class="btn" id="addGuest">Ajouter</button>
     </div>
+    <div class="sat" id="satRecap"></div>
     <div class="chips" id="filters"></div>
     <div id="guestList"></div>
     <p class="note">Le tarif se calcule tout seul à partir du séjour : 2 nuits, 1 nuit ou soirée seulement. Les montants se règlent dans l'onglet Budget. « Offert » met la participation à 0 € (DJ, organisateurs…). Les tarifs spéciaux accordés par Guilhem ou Amandine se règlent dans l'onglet Budget.</p>
@@ -474,7 +507,7 @@ const firstName=g=>{const n=String(g.name||'?').trim(),w=n.split(/\s+/)[0];retur
 const matItems=i=>String(i.materiel||'').split('\n').map(x=>x.trim()).filter(Boolean);
 
 let db=null, guests=[], expenses=[], todos=[], ideas=[], prices={deuxNuits:80,uneNuit:50,soiree:0}, pricesSeen=false;
-let filter='tous', dirty=false, olymp={}, editingIdea=null, editingWho=null;
+let filter='tous', dirty=false, olymp={}, samedi={}, editingIdea=null, editingWho=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eur=n=>(Math.round(n)).toLocaleString('fr-FR')+' €';
@@ -494,12 +527,18 @@ const counted=g=>comes(g)&&g.stay;
 // Écart avec le tarif normal, à la charge de l'organisateur qui l'accorde (pas du budget commun).
 const giftOf=g=>hasSpecial(g)&&counted(g)?Math.max(0,baseOf(g)-priceOf(g)):0;
 const narrow=matchMedia('(max-width: 899px)');
+// Samedi : repas du midi et activité de l'après-midi. Réponse par invité : 'oui' | 'non' | '' (pas encore répondu).
+const SAT={satLunch:{ico:'🍽️',label:'Repas samedi midi',short:'Midi'},activity:{ico:'🎯',label:"Activité de l'aprèm",short:'Aprèm'}};
+const satCount=k=>{const p=guests.filter(comes);return {oui:p.filter(g=>g[k]==='oui').length,non:p.filter(g=>g[k]==='non').length,vide:p.filter(g=>g[k]!=='oui'&&g[k]!=='non').length}};
+const seg=(g,k)=>`<div class="seg" role="radiogroup" aria-label="${SAT[k].label} : ${esc(g.name)}">${[['oui','Oui'],['non','Non'],['','?']].map(([v,l])=>`<label class="sg-${v||'vide'}"><input type="radio" name="${k}-${g.id}" data-f="${k}" value="${v}" ${(g[k]||'')===v?'checked':''}><span>${l}</span></label>`).join('')}</div>`;
 const FILTERS={
   tous:['Tous',g=>true],
   confirme:['Confirmés',g=>g.status==='confirme'],
   relancer:['À relancer',g=>g.status==='invite'||g.status==='peutetre'],
   gare:['Navette gare',g=>comes(g)&&g.gare],
-  apayer:['Pas encore payé',g=>counted(g)&&!g.paid&&priceOf(g)>0]};
+  apayer:['Pas encore payé',g=>counted(g)&&!g.paid&&priceOf(g)>0],
+  midi:['Midi sans réponse',g=>comes(g)&&g.satLunch!=='oui'&&g.satLunch!=='non'],
+  aprem:['Aprèm sans réponse',g=>comes(g)&&g.activity!=='oui'&&g.activity!=='non']};
 const sorted=()=>[...guests].sort((a,b)=>(a.order??1e12)-(b.order??1e12)||String(a.name).localeCompare(b.name,'fr'));
 
 /* ---------- tabs ---------- */
@@ -540,14 +579,33 @@ function renderStats(){
    <div class="stat"><span class="eyebrow">Solde<span class="lg"> prévisionnel</span></span><b class="${t.income-t.dep>=0?'pos':'neg'}">${t.income-t.dep>=0?'+':''}${eur(t.income-t.dep)}</b><small>participations − dépenses</small></div>`;
 }
 
+function renderSat(){
+  const dfmt=t=>new Date(t).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+  $('#satRecap').innerHTML=Object.entries(SAT).map(([k,q])=>{
+    const c=satCount(k),v=samedi[k],f=k==='satLunch'?'midi':'aprem';
+    const val=v&&Number.isFinite(v.n)
+      ?`<div class="satval ${v.n===c.oui?'ok':'warn'}"><span>${v.n===c.oui?'✓ Validé pour la réservation':'Validé à '+v.n+', ça a changé depuis'} · <b>${v.n}</b> le ${dfmt(v.at)}</span>${v.n!==c.oui?`<button class="btn small" data-satval="${k}">Revalider à ${c.oui}</button>`:''}</div>`
+      :`<button class="btn small" data-satval="${k}" ${c.oui?'':'disabled'}>Valider ${c.oui} pour réserver</button>`;
+    return `<div class="satq"><div class="sath"><span class="satico" aria-hidden="true">${q.ico}</span><span class="eyebrow">${q.label}</span></div>
+      <div class="satn"><b>${c.oui}</b><span>oui</span></div>
+      <div class="satsub"><span class="pill p-mute">${c.non} non</span>${c.vide?`<button class="pill p-warn satrel" data-satf="${f}" aria-pressed="${filter===f}">${c.vide} à relancer</button>`:'<span class="pill p-ok">Tout le monde a répondu</span>'}</div>
+      ${val}</div>`}).join('');
+}
+$('#satRecap').addEventListener('click',e=>{
+  const r=e.target.closest('[data-satf]');if(r){filter=filter===r.dataset.satf?'tous':r.dataset.satf;renderSat();renderGuests();$('#filters').scrollIntoView({block:'nearest'});return}
+  const b=e.target.closest('[data-satval]');if(!b||!db)return;
+  const k=b.dataset.satval;save(db.doc('settings/samedi').set({...samedi,[k]:{n:satCount(k).oui,at:Date.now()}}));
+  toast(`${SAT[k].label} : ${satCount(k).oui} validé pour la réservation.`);
+});
 function renderGuests(){
+  renderSat();
   $('#filters').innerHTML=Object.entries(FILTERS).map(([k,[label,fn]])=>{const n=guests.filter(fn).length;return `<button class="chip" data-f="${k}" aria-pressed="${filter===k}">${label}${k!=='tous'?` <span class="cn">${n}</span>`:''}</button>`}).join('');
   const list=sorted().filter(FILTERS[filter][1]);
   if(!guests.length){$('#guestList').innerHTML=`<div class="empty">${db?'Aucun invité pour l\'instant. Ajoute le premier nom juste au-dessus.':'Chargement de la liste…'}</div>`;return}
   if(!list.length){$('#guestList').innerHTML=`<div class="empty">Personne dans ce filtre.</div>`;return}
   if(narrow.matches){$('#guestList').innerHTML=`<div class="glist" data-live>${list.map(guestCard).join('')}</div>`;return}
   $('#guestList').innerHTML=`<div class="tablebox" data-live><table><thead><tr>
-    <th style="width:210px">Invité</th><th>Statut</th><th>Séjour</th><th>Arrivée</th><th>Heure</th><th class="c">Gare</th><th>Note</th><th style="text-align:right">Tarif</th><th class="c">Offert</th><th class="c">Payé</th><th></th></tr></thead><tbody>
+    <th style="width:210px">Invité</th><th>Statut</th><th>Séjour</th><th>Arrivée</th><th>Heure</th><th class="c">Gare</th><th class="c">Midi sam.</th><th class="c">Aprèm</th><th>Note</th><th style="text-align:right">Tarif</th><th class="c">Offert</th><th class="c">Payé</th><th></th></tr></thead><tbody>
     ${list.map(g=>`<tr data-id="${g.id}" class="${g.status==='decline'?'declined':''}">
       <td><div class="nm">${av(g)}<input type="text" data-f="name" id="n-${g.id}" value="${esc(g.name)}" class="name" aria-label="Nom"></div></td>
       <td><select data-f="status" id="s-${g.id}" class="status-sel st-${g.status||'invite'}" aria-label="Statut">${opt(STATUS,g.status||'invite')}</select></td>
@@ -555,6 +613,7 @@ function renderGuests(){
       <td><select data-f="arrDay" id="d-${g.id}" aria-label="Jour d'arrivée">${opt(DAYS,g.arrDay)}</select></td>
       <td><input type="time" data-f="arrTime" id="h-${g.id}" value="${esc(g.arrTime)}" aria-label="Heure d'arrivée"></td>
       <td class="c"><input type="checkbox" data-f="gare" id="g-${g.id}" ${g.gare?'checked':''} aria-label="À chercher à la gare"></td>
+      <td class="c">${seg(g,'satLunch')}</td><td class="c">${seg(g,'activity')}</td>
       <td><input type="text" data-f="note" id="o-${g.id}" value="${esc(g.note)}" placeholder="Train, allergie, voiture…" aria-label="Note"></td>
       <td class="num" style="text-align:right">${g.stay&&comes(g)?eur(priceOf(g)):'<span class="pill p-mute">—</span>'}${hasSpecial(g)?` <span class="pill p-sun" title="Tarif spécial accordé par ${ORGAS[g.specialBy]}">${ORGAS[g.specialBy].charAt(0)}</span>`:''}</td>
       <td class="c"><input type="checkbox" data-f="offert" id="f-${g.id}" ${g.offert?'checked':''} aria-label="Offert"></td>
@@ -569,7 +628,8 @@ const openGuests=new Set();
 function guestCard(g){
   const open=openGuests.has(g.id),st=g.status||'invite',sp=hasSpecial(g),billed=g.stay&&comes(g);
   const meta=[STAY_SHORT[g.stay||'']||'',g.arrDay?`arrive ${DAY_SHORT[g.arrDay]}${g.arrTime?' '+g.arrTime:''}`:''].filter(Boolean).join(' · ');
-  const tags=[`<span class="pill st-${st}">${STATUS[st]}</span>`,comes(g)&&g.gare?'<span class="pill p-sea">Gare</span>':'',g.offert&&!sp?'<span class="pill p-mute">Offert</span>':'',sp?`<span class="pill p-sun">Tarif ${ORGAS[g.specialBy]}</span>`:''].join('');
+  const tags=[`<span class="pill st-${st}">${STATUS[st]}</span>`,comes(g)&&g.gare?'<span class="pill p-sea">Gare</span>':'',g.offert&&!sp?'<span class="pill p-mute">Offert</span>':'',sp?`<span class="pill p-sun">Tarif ${ORGAS[g.specialBy]}</span>`:'',
+    ...(comes(g)?Object.entries(SAT).map(([k,q])=>g[k]==='oui'?`<span class="pill p-ok">${q.short} ✓</span>`:g[k]==='non'?`<span class="pill p-mute">${q.short} ✗</span>`:''):[])].join('');
   return `<div class="gcard${st==='decline'?' declined':''}${open?' open':''}" data-id="${g.id}">
     <button class="gsum" type="button" aria-expanded="${open}" aria-controls="ge-${g.id}">
       ${av(g)}
@@ -584,6 +644,8 @@ function guestCard(g){
       <label class="fld" for="d-${g.id}">Arrivée<select data-f="arrDay" id="d-${g.id}">${opt(DAYS,g.arrDay)}</select></label>
       <label class="fld" for="h-${g.id}">Heure<input type="time" data-f="arrTime" id="h-${g.id}" value="${esc(g.arrTime)}"></label>
       <label class="fld full" for="o-${g.id}">Note<input type="text" data-f="note" id="o-${g.id}" value="${esc(g.note)}" placeholder="Train, allergie, voiture…" autocomplete="off"></label>
+      <div class="fld full satf">${SAT.satLunch.label}${seg(g,'satLunch')}</div>
+      <div class="fld full satf">${SAT.activity.label}${seg(g,'activity')}</div>
       <div class="togs full">
         <label class="tog"><input type="checkbox" data-f="gare" id="g-${g.id}" ${g.gare?'checked':''}><span>Gare</span></label>
         <label class="tog"><input type="checkbox" data-f="offert" id="f-${g.id}" ${g.offert?'checked':''}><span>Offert</span></label>
@@ -613,7 +675,7 @@ async function addGuest(){
   const el=$('#newGuest'),name=el.value.trim();if(!name||!db)return;
   el.value='';
   const max=guests.reduce((m,g)=>Math.max(m,g.order||0),0);
-  await save(db.collection('guests').add({name,status:'invite',stay:'',arrDay:'',arrTime:'',gare:false,note:'',offert:false,paid:false,room:'',order:max+1,createdAt:Date.now()}));
+  await save(db.collection('guests').add({name,status:'invite',stay:'',arrDay:'',arrTime:'',gare:false,note:'',offert:false,paid:false,room:'',satLunch:'',activity:'',order:max+1,createdAt:Date.now()}));
 }
 $('#addGuest').onclick=addGuest;$('#newGuest').addEventListener('keydown',e=>{if(e.key==='Enter')addGuest()});
 
@@ -876,6 +938,7 @@ function startData(){
   sub('guests',v=>guests=v);sub('expenses',v=>expenses=v);sub('todos',v=>todos=v);sub('ideas',v=>ideas=v);
   unsubs.push(db.doc('settings/prix').onSnapshot(s=>{if(s.exists)prices={deuxNuits:80,uneNuit:50,soiree:0,...s.data()};render()}));
   unsubs.push(db.doc('settings/olympiades').onSnapshot(s=>{olymp=s.exists?s.data():{};render()}));
+  unsubs.push(db.doc('settings/samedi').onSnapshot(s=>{samedi=s.exists?s.data():{};render()}));
 }
 function stopData(){unsubs.forEach(u=>{try{u()}catch(e){}});unsubs=[];db=null;guests=[];expenses=[];todos=[];ideas=[]}
 
