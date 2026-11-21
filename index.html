@@ -234,6 +234,13 @@ td .name{font-weight:600}
 .gfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .x.del{color:var(--bad)}
 
+/* ---------- To-do : deux parties ---------- */
+.tsec{gap:12px}
+.tsec>.note{margin:-6px 0 0}
+.tsec h4{margin:0;font-family:var(--f-display);font-size:16px;font-weight:700}
+#matos{display:grid;gap:12px;padding-top:12px;border-top:1px solid var(--line)}
+#matos .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+
 /* ---------- Samedi : midi et activité ---------- */
 .sat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .satq{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:8px;align-content:start;min-width:0}
@@ -421,14 +428,28 @@ td .name{font-weight:600}
   </section>
 
   <section class="panel" id="p-todo" data-panel="todo" hidden>
-    <div class="bar add">
-      <input type="text" id="newTodo" class="grow" placeholder="Une chose à faire…">
-      <input type="text" id="newTodoWho" placeholder="Qui ?" style="width:130px" list="todoWhoList" autocomplete="off">
-      <datalist id="todoWhoList"></datalist>
-      <button class="btn" id="addTodo">Ajouter</button>
+    <datalist id="todoWhoList"></datalist>
+    <div class="card tsec">
+      <div class="head"><h3>🎉 Organisation du week-end</h3><span class="pill p-mute" id="cntW"></span></div>
+      <p class="note">Repas, courses, soirée, logistique.</p>
+      <div class="bar add">
+        <input type="text" id="newTodo" class="grow" placeholder="Une chose à faire pour le week-end…">
+        <input type="text" id="newTodoWho" placeholder="Qui ?" style="width:130px" list="todoWhoList" autocomplete="off">
+        <button class="btn" id="addTodo">Ajouter</button>
+      </div>
+      <div class="list" id="todos"></div>
     </div>
-    <div class="list" id="todos"></div>
-    <div class="card" id="matos" data-live></div>
+    <div class="card tsec">
+      <div class="head"><h3>🏅 Olympiades</h3><span class="pill p-mute" id="cntO"></span></div>
+      <p class="note">Ce qu'il faut faire pour préparer le jeu, puis le matériel de chaque épreuve (il suit l'onglet Olympiades).</p>
+      <div class="bar add">
+        <input type="text" id="newTodoO" class="grow" placeholder="Une chose à faire pour les Olympiades…">
+        <input type="text" id="newTodoWhoO" placeholder="Qui ?" style="width:130px" list="todoWhoList" autocomplete="off">
+        <button class="btn" id="addTodoO">Ajouter</button>
+      </div>
+      <div class="list" id="todosO"></div>
+      <div id="matos" data-live></div>
+    </div>
   </section>
 
   <section class="panel" id="p-olympiades" data-panel="olympiades" hidden>
@@ -802,7 +823,7 @@ document.querySelectorAll('.priceset input').forEach(el=>el.addEventListener('ch
 function renderMatos(){
   const list=sortedIdeas().filter(i=>matItems(i).length);
   const all=list.flatMap(i=>matItems(i).map(m=>!!(i.matOk||{})[m]));
-  $('#matos').innerHTML=`<div class="head"><h3>Matériel des Olympiades</h3><span class="pill ${all.length&&all.every(Boolean)?'p-ok':'p-mute'}">${all.filter(Boolean).length} / ${all.length} prêt${all.length>1?'s':''}</span></div>
+  $('#matos').innerHTML=`<div class="head"><h4>Matériel par épreuve</h4><span class="pill ${all.length&&all.every(Boolean)?'p-ok':'p-mute'}">${all.filter(Boolean).length} / ${all.length} prêt${all.length>1?'s':''}</span></div>
     ${list.length?list.map(i=>`<div class="matos-g" data-id="${i.id}"><div class="note"><b>${esc(i.icon||'🏅')} ${esc(i.title)}</b>${i.unsure?' · pas sûr':''}</div>
       ${matItems(i).map((m,k)=>{const ok=!!(i.matOk||{})[m];return `<label class="${ok?'ok':''}"><input type="checkbox" id="mt-${i.id}-${k}" data-item="${esc(m)}" ${ok?'checked':''}><span>${esc(m)}</span></label>`}).join('')}</div>`).join(''):`<span class="note">Le matériel indiqué dans les épreuves s'affichera ici.</span>`}`;
 }
@@ -817,20 +838,24 @@ function renderTodos(){
   const cur=document.getElementById('tw-'+editingWho);if(cur)whoDraft=cur.value;const hadFocus=!!cur&&document.activeElement===cur;
   if(editingWho&&!todos.some(t=>t.id===editingWho)){editingWho=null;whoDraft=null}
   const left=todos.filter(t=>!t.done).length,bd=$('#todoBadge');bd.textContent=left;bd.hidden=!left;
-  const box=$('#todos');box.setAttribute('data-live','');
-  if(!todos.length){box.innerHTML=`<div class="empty" style="border:0">Rien à faire pour l'instant. Ajoute une tâche au-dessus.</div>`;return}
-  const list=[...todos].sort((a,b)=>(a.done-b.done)||((a.createdAt||0)-(b.createdAt||0)));
+  // Deux parties : todos.cat === 'olympiades' → Olympiades, sinon → Organisation du week-end.
+  for(const [sel,cnt,inO] of [['#todos','#cntW',false],['#todosO','#cntO',true]]){
+  const box=$(sel);box.setAttribute('data-live','');
+  const list=todos.filter(t=>(t.cat==='olympiades')===inO).sort((a,b)=>(a.done-b.done)||((a.createdAt||0)-(b.createdAt||0)));
+  $(cnt).textContent=`${list.filter(t=>t.done).length} / ${list.length} fait${list.length>1?'s':''}`;
+  if(!list.length){box.innerHTML=`<div class="empty" style="border:0">Rien à faire pour l'instant. Ajoute une tâche au-dessus.</div>`;continue}
   box.innerHTML=list.map(t=>`<div class="todo${t.done?' done':''}" data-id="${t.id}">
     <label class="ck" for="td-${t.id}"><input type="checkbox" data-f="done" id="td-${t.id}" ${t.done?'checked':''} aria-label="Fait : ${esc(t.text)}"></label>
     <label class="tx" for="td-${t.id}"><span class="t">${esc(t.text)}</span></label>
     ${t.id===editingWho?`<input type="text" class="who-in" id="tw-${t.id}" list="todoWhoList" autocomplete="off" placeholder="Qui ?" value="${esc(whoDraft??t.who??'')}" aria-label="Attribuer : ${esc(t.text)}">`
       :`<button class="who${t.who?' set':''}" data-who aria-label="${t.who?`Attribuée à ${esc(t.who)}, modifier`:'Attribuer la tâche'}">${t.who?esc(t.who):'+ Qui ?'}</button>`}
     <button class="x" data-del="todos" aria-label="Supprimer la tâche">×</button></div>`).join('');
+  }
   if(hadFocus)focusWho();
 }
-$('#todos').addEventListener('change',e=>{if(e.target.classList.contains('who-in'))return;const row=e.target.closest('[data-id]');if(row&&db)save(db.doc('todos/'+row.dataset.id).update({done:e.target.checked}))});
+['#todos','#todosO'].forEach(sel=>$(sel).addEventListener('change',e=>{if(e.target.classList.contains('who-in'))return;const row=e.target.closest('[data-id]');if(row&&db)save(db.doc('todos/'+row.dataset.id).update({done:e.target.checked}))}));
 function focusWho(){const el=document.getElementById('tw-'+editingWho);if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}}
-$('#todos').addEventListener('click',e=>{const b=e.target.closest('[data-who]');if(!b)return;const row=b.closest('[data-id]');editingWho=row.dataset.id;whoDraft=null;renderTodos();focusWho()});
+['#todos','#todosO'].forEach(sel=>$(sel).addEventListener('click',e=>{const b=e.target.closest('[data-who]');if(!b)return;const row=b.closest('[data-id]');editingWho=row.dataset.id;whoDraft=null;renderTodos();focusWho()}));
 function commitWho(cancel){
   const id=editingWho;if(!id)return;const el=document.getElementById('tw-'+id);const v=el?el.value.trim():'';
   editingWho=null;whoDraft=null;
@@ -838,10 +863,11 @@ function commitWho(cancel){
   if(!cancel&&db&&t&&(t.who||'')!==v)save(db.doc('todos/'+id).update({who:v}));
   renderTodos();
 }
-$('#todos').addEventListener('keydown',e=>{if(!e.target.classList.contains('who-in'))return;if(e.key==='Enter'){e.preventDefault();commitWho(false)}else if(e.key==='Escape'){commitWho(true)}});
-$('#todos').addEventListener('focusout',e=>{if(e.target.classList.contains('who-in')&&e.target.id==='tw-'+editingWho)setTimeout(()=>{const el=document.getElementById('tw-'+editingWho);if(editingWho&&document.activeElement!==el)commitWho(false)},0)});
-function addTodo(){const t=$('#newTodo').value.trim();if(!t||!db)return;const who=$('#newTodoWho').value.trim();$('#newTodo').value='';save(db.collection('todos').add({text:t,who,done:false,createdAt:Date.now()}))}
-$('#addTodo').onclick=addTodo;$('#newTodo').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo()});
+['#todos','#todosO'].forEach(sel=>$(sel).addEventListener('keydown',e=>{if(!e.target.classList.contains('who-in'))return;if(e.key==='Enter'){e.preventDefault();commitWho(false)}else if(e.key==='Escape'){commitWho(true)}}));
+['#todos','#todosO'].forEach(sel=>$(sel).addEventListener('focusout',e=>{if(e.target.classList.contains('who-in')&&e.target.id==='tw-'+editingWho)setTimeout(()=>{const el=document.getElementById('tw-'+editingWho);if(editingWho&&document.activeElement!==el)commitWho(false)},0)}));
+function addTodo(o){const sfx=o?'O':'',el=$('#newTodo'+sfx),t=el.value.trim();if(!t||!db)return;const who=$('#newTodoWho'+sfx).value.trim();el.value='';save(db.collection('todos').add({text:t,who,done:false,createdAt:Date.now(),...(o?{cat:'olympiades'}:{})}))}
+$('#addTodo').onclick=()=>addTodo(false);$('#newTodo').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo(false)});
+$('#addTodoO').onclick=()=>addTodo(true);$('#newTodoO').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo(true)});
 
 /* ---------- ideas ---------- */
 const sortedIdeas=()=>[...ideas].sort((a,b)=>(a.order??1e12)-(b.order??1e12)||(a.createdAt||0)-(b.createdAt||0));
