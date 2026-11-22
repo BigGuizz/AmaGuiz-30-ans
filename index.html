@@ -111,6 +111,10 @@ td .name{font-weight:600}
 .money{display:grid;gap:0}
 .money .row{display:grid;grid-template-columns:1fr 120px 36px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
 .money .row input[type=number]{text-align:right;width:100%}
+#expenses .row{grid-template-columns:minmax(0,1fr) 100px 195px 36px}
+.payer{font-size:13.5px}
+.payer.todo{color:var(--warn);border-style:dashed}
+.settle{font-size:16px;font-weight:600}
 .money .total{display:flex;justify-content:space-between;padding:10px 0 0;font-weight:700}
 .kv{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:baseline}
 .kv .v{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
@@ -312,6 +316,11 @@ td .name{font-weight:600}
   .chip{flex:none;min-height:38px;padding:6px 14px}
 
   .money .row{grid-template-columns:minmax(0,1fr) 84px 40px}
+  #expenses .row{grid-template-columns:minmax(0,1fr) 96px 40px}
+  #expenses .row input[data-f=label]{grid-column:1/-1}
+  #expenses .row .payer{grid-column:1;grid-row:2}
+  #expenses .row input[data-f=amount]{grid-column:2;grid-row:2}
+  #expenses .row .x{grid-column:3;grid-row:2}
   .kv{gap:7px 12px}
   .big{font-size:30px}
 
@@ -588,7 +597,11 @@ function totals(){
   const paid=guests.filter(g=>counted(g)&&g.paid).reduce((s,g)=>s+priceOf(g),0);
   const gifts={};for(const k in ORGAS)gifts[k]=guests.filter(g=>g.specialBy===k).reduce((s,g)=>s+giftOf(g),0);
   const income=due+Object.values(gifts).reduce((s,v)=>s+v,0);
-  return {ven,sam,dep,due,paid,gifts,income,conf:guests.filter(g=>g.status==='confirme').length,gare:guests.filter(g=>comes(g)&&g.gare).length};
+  // Dépenses par payeur : expenses.paidBy = 'guilhem' | 'amandine' | '' (pas encore payée)
+  const depBy={};for(const k in ORGAS)depBy[k]=expenses.filter(e=>e.paidBy===k).reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const depPaid=Object.values(depBy).reduce((s,v)=>s+v,0),depTodo=dep-depPaid;
+  const nPaid=guests.filter(g=>counted(g)&&g.paid&&priceOf(g)>0).length,nDue=guests.filter(g=>counted(g)&&priceOf(g)>0).length;
+  return {ven,sam,dep,due,paid,gifts,income,depBy,depPaid,depTodo,nPaid,nDue,now:paid-depPaid,conf:guests.filter(g=>g.status==='confirme').length,gare:guests.filter(g=>comes(g)&&g.gare).length};
 }
 function meter(n,cap){const p=Math.min(100,n/cap*100);return `<div class="meter${n>cap?' over':''}"><i style="width:${p}%"></i></div>`}
 function renderStats(){
@@ -597,7 +610,7 @@ function renderStats(){
    <div class="stat"><span class="eyebrow">Confirmés</span><b>${t.conf}<span class="of"> / ${guests.length}</span></b><small>sur la liste</small></div>
    <div class="stat"><span class="eyebrow"><span class="lg">Nuit de </span>vendredi</span><b>${t.ven}<span class="of"> / ${CAPACITY}</span></b>${meter(t.ven,CAPACITY)}</div>
    <div class="stat"><span class="eyebrow"><span class="lg">Nuit de </span>samedi</span><b>${t.sam}<span class="of"> / ${CAPACITY}</span></b>${meter(t.sam,CAPACITY)}</div>
-   <div class="stat"><span class="eyebrow">Solde<span class="lg"> prévisionnel</span></span><b class="${t.income-t.dep>=0?'pos':'neg'}">${t.income-t.dep>=0?'+':''}${eur(t.income-t.dep)}</b><small>participations − dépenses</small></div>`;
+   <div class="stat"><span class="eyebrow">Solde<span class="lg"> aujourd'hui</span></span><b class="${t.now>=0?'pos':'neg'}">${t.now>=0?'+':''}${eur(t.now)}</b><small>encaissé − dépenses payées · prévu ${t.income-t.dep>=0?'+':''}${eur(t.income-t.dep)}</small></div>`;
 }
 
 function renderSat(){
@@ -740,20 +753,36 @@ function renderBudget(){
   $('#expenses').innerHTML=(expenses.length?[...expenses].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)).map(e=>`<div class="row" data-id="${e.id}">
      <input type="text" data-f="label" id="el-${e.id}" value="${esc(e.label)}" aria-label="Libellé">
      <input type="number" data-f="amount" id="ea-${e.id}" value="${Number(e.amount)||0}" aria-label="Montant en euros">
+     <select data-f="paidBy" id="ep-${e.id}" class="payer${e.paidBy?'':' todo'}" aria-label="Payée par">${opt({'':'Pas encore payée',...Object.fromEntries(Object.entries(ORGAS).map(([k,l])=>[k,'Payée par '+l]))},e.paidBy||'')}</select>
      <button class="x" data-del="expenses" aria-label="Supprimer">×</button></div>`).join(''):`<div class="empty">Aucune dépense saisie.</div>`)
-     +`<div class="total"><span>Total</span><span class="num">${eur(t.dep)}</span></div>`;
+     +`<div class="total"><span>Total</span><span class="num">${eur(t.dep)}</span></div>
+     <div class="kv note" style="padding-top:4px">${Object.entries(ORGAS).map(([k,l])=>`<span>Payé par ${l}</span><span class="v">${eur(t.depBy[k])}</span>`).join('')}<span>Pas encore payé</span><span class="v">${eur(t.depTodo)}</span></div>`;
   const people=guests.filter(counted);
   const nNights=people.reduce((s,g)=>s+nightsOf(g).length,0);
   const solde=t.income-t.dep;
   const giftRows=Object.entries(ORGAS).filter(([k])=>guests.some(g=>g.specialBy===k)).map(([k,l])=>`<span>Tarifs spéciaux de ${l}</span><span class="v">${eur(t.gifts[k])}</span>`).join('');
+  // Qui doit quoi à qui (sur ce qui est déjà payé). L'argent des invités arrive chez Amandine.
+  // Chacun doit supporter la moitié du coût net + ses propres tarifs spéciaux.
+  const giftT=Object.values(t.gifts).reduce((a,v)=>a+v,0),net=t.depPaid-t.paid;
+  const fairG=(net-giftT)/2+t.gifts.guilhem,diff=Math.round(t.depBy.guilhem-fairG);
+  const settle=diff>0?`Amandine doit <b>${eur(diff)}</b> à Guilhem`:diff<0?`Guilhem doit <b>${eur(-diff)}</b> à Amandine`:'Vous êtes à égalité';
   $('#balance').innerHTML=`<h3>Équilibre</h3>
-    <div><div class="eyebrow">Solde si tout le monde paie</div><div class="big ${solde>=0?'pos':'neg'}">${solde>=0?'+':''}${eur(solde)}</div></div>
+    <div><div class="eyebrow">Solde aujourd'hui</div><div class="big ${t.now>=0?'pos':'neg'}">${t.now>=0?'+':''}${eur(t.now)}</div><span class="note">Argent encaissé moins dépenses déjà payées.</span></div>
     <div class="kv">
-      <span>Participations attendues</span><span class="v">${eur(t.due)}</span>
-      ${giftRows}
-      <span>Déjà encaissé</span><span class="v">${eur(t.paid)}</span>
+      <span>Encaissé chez Amandine <span class="note">· ${t.nPaid} / ${t.nDue} ont payé</span></span><span class="v">${eur(t.paid)}</span>
       <span>Reste à encaisser</span><span class="v">${eur(t.due-t.paid)}</span>
-      <span>Dépenses</span><span class="v">${eur(t.dep)}</span>
+      <span>Dépenses payées</span><span class="v">${eur(t.depPaid)}</span>
+      <span>Dépenses pas encore payées</span><span class="v">${eur(t.depTodo)}</span>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px">
+      <div class="eyebrow">Qui doit quoi</div>
+      <div class="settle">${settle}</div>
+      <div class="kv note"><span>Guilhem a avancé</span><span class="v">${eur(t.depBy.guilhem)}</span><span>Amandine a avancé</span><span class="v">${eur(t.depBy.amandine)}</span><span>Amandine a reçu des invités</span><span class="v">${eur(t.paid)}</span></div>
+      <span class="note">Calculé sur ce qui est déjà payé et encaissé : le reste est partagé à deux, les tarifs spéciaux restent à la charge de chacun.</span>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px">
+      <div class="eyebrow">Si tout le monde paie</div><div class="big ${solde>=0?'pos':'neg'}" style="font-size:24px">${solde>=0?'+':''}${eur(solde)}</div>
+      <div class="kv"><span>Participations attendues</span><span class="v">${eur(t.due)}</span>${giftRows}<span>Dépenses</span><span class="v">${eur(t.dep)}</span></div>
     </div>
     <div class="kv" style="border-top:1px solid var(--line);padding-top:10px">
       <span>Personnes au séjour connu</span><span class="v">${people.length}</span>

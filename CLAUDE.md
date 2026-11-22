@@ -60,7 +60,7 @@ Toute nouvelle collection doit être ajoutée à cette liste, sinon les écritur
 - `specialBy` : `''` | `guilhem` | `amandine` (organisateur qui accorde un tarif spécial), `specialPrice` number (€ payés par l'invité).
   Champs optionnels : absents sur les anciens invités, ce qui équivaut à « pas de tarif spécial ».
 
-**`expenses/{id}`** : `label`, `amount` (€), `createdAt`.
+**`expenses/{id}`** : `label`, `amount` (€), `createdAt`, `paidBy` : `'guilhem'` | `'amandine'` | `''`/absent (pas encore payée).
 La ligne dont le libellé contient « mas » sert au calcul « coût du mas par nuit dormie ».
 
 **`todos/{id}`** : `text`, `who`, `done`, `createdAt`, `cat` optionnel (`'olympiades'`, sinon partie « Organisation du week-end »). L'onglet To-do a deux parties nommées : « Organisation du week-end » et « Olympiades » (tâches du jeu + matériel par épreuve, tiré de `ideas.materiel`). `who` modifiable après création : pastille « + Qui ? » ou nom dans la ligne, champ inline (Entrée ou sortie du champ = enregistre, Échap = annule), suggestions via `<datalist id="todoWhoList">` (Guilhem, Amandine + noms déjà utilisés).
@@ -90,7 +90,10 @@ Si le nombre de « oui » change ensuite, le récap l'affiche et propose « Reva
   et l'écart avec le tarif normal (`giftOf`) est **à la charge de l'organisateur qui l'accorde**, pas du budget commun.
   Un tarif spécial passe avant `offert` (l'ajouter décoche `offert`, cocher `offert` retire le tarif spécial).
   Liste des organisateurs : constante `ORGAS`.
-- **Budget** : solde = participations attendues + cadeaux des organisateurs − dépenses.
+- **Budget** : « Solde aujourd'hui » (en-tête et Équilibre) = encaissé (invités `paid`) − dépenses payées (`paidBy` renseigné).
+  « Si tout le monde paie » = participations attendues + cadeaux des organisateurs − toutes les dépenses.
+  **Qui doit quoi** (façon Tricount) : l'argent des invités arrive toujours chez Amandine. Coût net = dépenses payées − encaissé ;
+  chacun en supporte la moitié + ses propres tarifs spéciaux ; l'écart avec ce que Guilhem a avancé donne qui doit combien à l'autre.
   Mise en page : paramètres à gauche (dépenses, tarifs, tarifs spéciaux, répartition), récap « Équilibre » sticky à droite
   (en haut et non sticky sous 860 px). « De votre poche » = tarifs spéciaux de chacun + moitié du déficit restant. Si le solde est négatif, l'UI propose le % de hausse des tarifs pour tomber juste.
 - **Saisie** : un champ texte s'enregistre au `change` (en quittant le champ). Tant qu'un input dans un bloc `[data-live]`
