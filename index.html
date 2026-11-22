@@ -763,8 +763,10 @@ function renderBudget(){
   const giftRows=Object.entries(ORGAS).filter(([k])=>guests.some(g=>g.specialBy===k)).map(([k,l])=>`<span>Tarifs spéciaux de ${l}</span><span class="v">${eur(t.gifts[k])}</span>`).join('');
   // Qui doit quoi à qui (sur ce qui est déjà payé). L'argent des invités arrive chez Amandine.
   // Chacun doit supporter la moitié du coût net + ses propres tarifs spéciaux.
-  const giftT=Object.values(t.gifts).reduce((a,v)=>a+v,0),net=t.depPaid-t.paid;
-  const fairG=(net-giftT)/2+t.gifts.guilhem,diff=Math.round(t.depBy.guilhem-fairG);
+  // Tarifs spéciaux comptés seulement pour les invités qui ont déjà payé.
+  const gp=k=>guests.filter(g=>g.specialBy===k&&g.paid).reduce((a,g)=>a+giftOf(g),0),gG=gp('guilhem'),gA=gp('amandine');
+  const net=t.depPaid-t.paid;
+  const fairG=(net-gG-gA)/2+gG,diff=Math.round(t.depBy.guilhem-fairG);
   const settle=diff>0?`Amandine doit <b>${eur(diff)}</b> à Guilhem`:diff<0?`Guilhem doit <b>${eur(-diff)}</b> à Amandine`:'Vous êtes à égalité';
   $('#balance').innerHTML=`<h3>Équilibre</h3>
     <div><div class="eyebrow">Solde aujourd'hui</div><div class="big ${t.now>=0?'pos':'neg'}">${t.now>=0?'+':''}${eur(t.now)}</div><span class="note">Argent encaissé moins dépenses déjà payées.</span></div>
