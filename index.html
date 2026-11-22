@@ -601,7 +601,7 @@ function totals(){
   const depBy={};for(const k in ORGAS)depBy[k]=expenses.filter(e=>e.paidBy===k).reduce((s,e)=>s+(Number(e.amount)||0),0);
   const depPaid=Object.values(depBy).reduce((s,v)=>s+v,0),depTodo=dep-depPaid;
   const nPaid=guests.filter(g=>counted(g)&&g.paid&&priceOf(g)>0).length,nDue=guests.filter(g=>counted(g)&&priceOf(g)>0).length;
-  return {ven,sam,dep,due,paid,gifts,income,depBy,depPaid,depTodo,nPaid,nDue,now:paid-depPaid,conf:guests.filter(g=>g.status==='confirme').length,gare:guests.filter(g=>comes(g)&&g.gare).length};
+  return {ven,sam,dep,due,paid,gifts,income,depBy,depPaid,depTodo,nPaid,nDue,now:paid-dep,conf:guests.filter(g=>g.status==='confirme').length,gare:guests.filter(g=>comes(g)&&g.gare).length};
 }
 function meter(n,cap){const p=Math.min(100,n/cap*100);return `<div class="meter${n>cap?' over':''}"><i style="width:${p}%"></i></div>`}
 function renderStats(){
@@ -610,7 +610,7 @@ function renderStats(){
    <div class="stat"><span class="eyebrow">Confirmés</span><b>${t.conf}<span class="of"> / ${guests.length}</span></b><small>sur la liste</small></div>
    <div class="stat"><span class="eyebrow"><span class="lg">Nuit de </span>vendredi</span><b>${t.ven}<span class="of"> / ${CAPACITY}</span></b>${meter(t.ven,CAPACITY)}</div>
    <div class="stat"><span class="eyebrow"><span class="lg">Nuit de </span>samedi</span><b>${t.sam}<span class="of"> / ${CAPACITY}</span></b>${meter(t.sam,CAPACITY)}</div>
-   <div class="stat"><span class="eyebrow">Solde<span class="lg"> aujourd'hui</span></span><b class="${t.now>=0?'pos':'neg'}">${t.now>=0?'+':''}${eur(t.now)}</b><small>encaissé − dépenses payées · prévu ${t.income-t.dep>=0?'+':''}${eur(t.income-t.dep)}</small></div>`;
+   <div class="stat"><span class="eyebrow">Solde<span class="lg"> aujourd'hui</span></span><b class="${t.now>=0?'pos':'neg'}">${t.now>=0?'+':''}${eur(t.now)}</b><small>encaissé − toutes les dépenses · prévu ${t.income-t.dep>=0?'+':''}${eur(t.income-t.dep)}</small></div>`;
 }
 
 function renderSat(){
@@ -769,12 +769,11 @@ function renderBudget(){
   const fairG=(net-gG-gA)/2+gG,diff=Math.round(t.depBy.guilhem-fairG);
   const settle=diff>0?`Amandine doit <b>${eur(diff)}</b> à Guilhem`:diff<0?`Guilhem doit <b>${eur(-diff)}</b> à Amandine`:'Vous êtes à égalité';
   $('#balance').innerHTML=`<h3>Équilibre</h3>
-    <div><div class="eyebrow">Solde aujourd'hui</div><div class="big ${t.now>=0?'pos':'neg'}">${t.now>=0?'+':''}${eur(t.now)}</div><span class="note">Argent encaissé moins dépenses déjà payées.</span></div>
+    <div><div class="eyebrow">Solde aujourd'hui</div><div class="big ${t.now>=0?'pos':'neg'}">${t.now>=0?'+':''}${eur(t.now)}</div><span class="note">Argent encaissé auprès des invités moins toutes les dépenses.</span></div>
     <div class="kv">
       <span>Encaissé chez Amandine <span class="note">· ${t.nPaid} / ${t.nDue} ont payé</span></span><span class="v">${eur(t.paid)}</span>
       <span>Reste à encaisser</span><span class="v">${eur(t.due-t.paid)}</span>
-      <span>Dépenses payées</span><span class="v">${eur(t.depPaid)}</span>
-      <span>Dépenses pas encore payées</span><span class="v">${eur(t.depTodo)}</span>
+      <span>Dépenses</span><span class="v">${eur(t.dep)}</span>
     </div>
     <div style="border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px">
       <div class="eyebrow">Qui doit quoi</div>

@@ -90,7 +90,7 @@ Si le nombre de « oui » change ensuite, le récap l'affiche et propose « Reva
   et l'écart avec le tarif normal (`giftOf`) est **à la charge de l'organisateur qui l'accorde**, pas du budget commun.
   Un tarif spécial passe avant `offert` (l'ajouter décoche `offert`, cocher `offert` retire le tarif spécial).
   Liste des organisateurs : constante `ORGAS`.
-- **Budget** : « Solde aujourd'hui » (en-tête et Équilibre) = encaissé (invités `paid`) − dépenses payées (`paidBy` renseigné).
+- **Budget** : « Solde aujourd'hui » (en-tête et Équilibre) = encaissé (invités `paid`) − toutes les dépenses (payées ou non). `paidBy` ne sert qu'au calcul « Qui doit quoi ».
   « Si tout le monde paie » = participations attendues + cadeaux des organisateurs − toutes les dépenses.
   **Qui doit quoi** (façon Tricount) : l'argent des invités arrive toujours chez Amandine. Coût net = dépenses payées − encaissé ;
   chacun en supporte la moitié + ses propres tarifs spéciaux ; l'écart avec ce que Guilhem a avancé donne qui doit combien à l'autre.
